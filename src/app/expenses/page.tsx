@@ -48,15 +48,15 @@ function ExpensesTable({
     <div className="space-y-4">
       <div className="overflow-x-auto rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/60">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50/95 text-left">
+          <thead className="bg-slate-100 text-left">
             <tr>
-              <th className="px-4 py-3 font-semibold text-slate-950">Date</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Check #</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Voucher #</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Purpose</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Requested By</th>
-              <th className="px-4 py-3 font-semibold text-slate-950 text-right">Amount</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Account</th>
+              <th className="px-4 py-3 font-bold text-slate-950">Date</th>
+              <th className="px-4 py-3 font-bold text-slate-950">Check #</th>
+              <th className="px-4 py-3 font-bold text-slate-950">Voucher #</th>
+              <th className="px-4 py-3 font-bold text-slate-950">Purpose</th>
+              <th className="px-4 py-3 font-bold text-slate-950">Requested By</th>
+              <th className="px-4 py-3 font-bold text-slate-950 text-right">Amount</th>
+              <th className="px-4 py-3 font-bold text-slate-950">Account</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">

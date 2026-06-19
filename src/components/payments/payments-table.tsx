@@ -58,15 +58,15 @@ export function PaymentsTable({
     <div className="space-y-4">
       <div className="overflow-x-auto rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/60">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50/95 text-left">
+          <thead className="bg-slate-100 text-left">
             <tr>
-              <th className="px-4 py-3 font-semibold text-slate-950">Date</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Check #</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Voucher #</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Project #</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Supervisor</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Address</th>
-              <th className="px-4 py-3 font-semibold text-slate-950 text-right">Amount</th>
+              <th className="px-4 py-3 font-bold text-slate-950">Date</th>
+              <th className="px-4 py-3 font-bold text-slate-950">Check #</th>
+              <th className="px-4 py-3 font-bold text-slate-950">Voucher #</th>
+              <th className="px-4 py-3 font-bold text-slate-950">Project #</th>
+              <th className="px-4 py-3 font-bold text-slate-950">Supervisor</th>
+              <th className="px-4 py-3 font-bold text-slate-950">Address</th>
+              <th className="px-4 py-3 font-bold text-slate-950 text-right">Amount</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
