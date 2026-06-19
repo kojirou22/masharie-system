@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Masharie System",
-  description: "Project, payment, expense, and report dashboard for community development work.",
+  description: "Project, payment, expense, and dashboard charts for community development work.",
 };
 
 const navItems = [
@@ -23,7 +23,6 @@ const navItems = [
   { href: "/payments", label: "Payments" },
   { href: "/expenses", label: "Expenses" },
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/reports", label: "Reports" },
 ];
 
 export default function RootLayout({

@@ -1,9 +1,17 @@
 import Link from 'next/link'
+import { Suspense } from 'react'
+import { ReportCharts } from '@/components/reports/report-charts'
 import { getDashboardStats } from '@/lib/supabase/queries/dashboard'
+import { getExpenses } from '@/lib/supabase/queries/expenses'
+import { getProjects } from '@/lib/supabase/queries/projects'
 import { formatPHP } from '@/lib/utils/currency'
 
 export default async function DashboardPage() {
-  const stats = await getDashboardStats()
+  const [stats, projects, expenses] = await Promise.all([
+    getDashboardStats(),
+    getProjects({ pageSize: 1000 }),
+    getExpenses({ pageSize: 1000 }),
+  ])
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10">
@@ -28,7 +36,7 @@ export default async function DashboardPage() {
         <StatCard label="Total Released" value={formatPHP(stats.total_released)} />
       </div>
 
-      <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60">
+      <div className="mb-8 rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60">
         <h2 className="text-lg font-semibold text-slate-950 mb-2 font-[family-name:var(--font-fira-code)]">
           Quick Links
         </h2>
@@ -37,9 +45,12 @@ export default async function DashboardPage() {
           <QuickLink href="/projects/new" label="New Project" />
           <QuickLink href="/payments" label="Payments" />
           <QuickLink href="/expenses" label="Expenses" />
-          <QuickLink href="/reports" label="Reports" />
         </div>
       </div>
+
+      <Suspense fallback={<div className="animate-pulse py-16 text-center text-blue-400">Loading charts...</div>}>
+        <ReportCharts projects={projects.data} expenses={expenses.data} />
+      </Suspense>
     </div>
   )
 }

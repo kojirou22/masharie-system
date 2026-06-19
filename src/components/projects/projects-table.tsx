@@ -10,10 +10,41 @@ export type ProjectWithTotals = Project & {
   total_released: number
 }
 
-export function ProjectsTable({ projects, total, page }: { projects: ProjectWithTotals[]; total: number; page: number }) {
+export function ProjectsTable({
+  projects,
+  total,
+  page,
+  currentSearch,
+  currentStatus,
+  currentType,
+  currentBatchNumber,
+  currentBatchYear,
+}: {
+  projects: ProjectWithTotals[]
+  total: number
+  page: number
+  currentSearch: string
+  currentStatus: string
+  currentType: string
+  currentBatchNumber: string
+  currentBatchYear: string
+}) {
   const router = useRouter()
   const pageSize = 25
   const totalPages = Math.ceil(total / pageSize)
+
+  function pageHref(nextPage: number) {
+    const params = new URLSearchParams()
+    if (currentSearch) params.set('search', currentSearch)
+    if (currentStatus) params.set('status', currentStatus)
+    if (currentType) params.set('type', currentType)
+    if (currentBatchNumber) params.set('batch_number', currentBatchNumber)
+    if (currentBatchYear) params.set('batch_year', currentBatchYear)
+    if (nextPage > 1) params.set('page', String(nextPage))
+
+    const query = params.toString()
+    return query ? `/projects?${query}` : '/projects'
+  }
 
   function openProject(projectId: string) {
     router.push(`/projects/${projectId}`)
@@ -91,7 +122,7 @@ export function ProjectsTable({ projects, total, page }: { projects: ProjectWith
           <div className="flex gap-2">
             {page > 1 && (
               <Link
-                href={`/projects?page=${page - 1}`}
+                href={pageHref(page - 1)}
                 className="rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 shadow-sm hover:bg-slate-50 transition-colors"
               >
                 Previous
@@ -99,7 +130,7 @@ export function ProjectsTable({ projects, total, page }: { projects: ProjectWith
             )}
             {page < totalPages && (
               <Link
-                href={`/projects?page=${page + 1}`}
+                href={pageHref(page + 1)}
                 className="rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 shadow-sm hover:bg-slate-50 transition-colors"
               >
                 Next

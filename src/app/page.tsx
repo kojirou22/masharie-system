@@ -23,7 +23,7 @@ const cards = [
   {
     href: "/dashboard",
     title: "Admin Dashboard",
-    description: "Open protected KPI cards, reports, and admin project management links.",
+    description: "Open protected KPI cards, charts, and admin project management links.",
     icon: BarChart3,
   },
 ];
@@ -41,7 +41,7 @@ export default function Home() {
               A cleaner dashboard for Masharie projects, payments, and expenses.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-              Review public project data quickly, then sign in as an admin when you need to manage records and reports.
+              Review public project data quickly, then sign in as an admin when you need to manage records and charts.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link

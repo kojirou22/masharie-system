@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Suspense } from 'react'
+import { AutoFilterForm } from '@/components/auto-filter-form'
 import { PaymentsTable, type PaymentWithProject } from '@/components/payments/payments-table'
 import { getPayments } from '@/lib/supabase/queries/payments'
 import type { PaymentStatus } from '@/lib/types/database'
@@ -10,7 +11,7 @@ const STATUS_OPTIONS: PaymentStatus[] = ['Pending', 'Released', 'Cancelled']
 
 function FilterBar({ currentSearch, currentStatus }: { currentSearch: string; currentStatus: string }) {
   return (
-    <form className="flex flex-wrap items-end gap-3 rounded-2xl border border-blue-100 bg-white/85 p-4 shadow-sm shadow-blue-100/60">
+    <AutoFilterForm action="/payments" className="flex flex-wrap items-end gap-3 rounded-2xl border border-blue-100 bg-white/85 p-4 shadow-sm shadow-blue-100/60">
       <div className="flex-1 min-w-[220px]">
         <label htmlFor="search" className="block text-xs font-medium text-blue-700 mb-1">Search</label>
         <input
@@ -36,13 +37,7 @@ function FilterBar({ currentSearch, currentStatus }: { currentSearch: string; cu
           ))}
         </select>
       </div>
-      <button
-        type="submit"
-        className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors"
-      >
-        Filter
-      </button>
-    </form>
+    </AutoFilterForm>
   )
 }
 

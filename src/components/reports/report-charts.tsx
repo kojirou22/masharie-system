@@ -13,13 +13,12 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { formatPHP } from '@/lib/utils/currency'
-import type { Expense, PaymentRelease, Project } from '@/lib/types/database'
+import type { Expense, Project } from '@/lib/types/database'
 
 const COLORS = ['#2563EB', '#22C55E', '#F59E0B', '#EF4444', '#3B82F6', '#14B8A6', '#F97316', '#6366F1']
 
 export function ReportCharts({ projects, expenses }: {
   projects: Project[]
-  payments: PaymentRelease[]
   expenses: Expense[]
 }) {
   // Projects by type

@@ -5,6 +5,7 @@ export interface ProjectFilters {
   search?: string
   status?: ProjectStatus
   type?: ProjectType
+  batch_number?: string
   batch_year?: number
   donor?: string
   supervisor?: string
@@ -19,7 +20,7 @@ type ProjectWithReleaseRows = Project & {
 
 export async function getProjects(filters: ProjectFilters = {}) {
   const supabase = await createClient()
-  const { search, status, type, batch_year, donor, supervisor, page = 1, pageSize = 25 } = filters
+  const { search, status, type, batch_number, batch_year, donor, supervisor, page = 1, pageSize = 25 } = filters
 
   let query = supabase
     .from('projects')
@@ -35,6 +36,7 @@ export async function getProjects(filters: ProjectFilters = {}) {
   }
   if (status) query = query.eq('status', status)
   if (type) query = query.eq('type', type)
+  if (batch_number) query = query.eq('batch_number', batch_number)
   if (batch_year) query = query.eq('batch_year', batch_year)
   if (donor) query = query.ilike('donor', `%${donor}%`)
   if (supervisor) query = query.ilike('supervisor', `%${supervisor}%`)
