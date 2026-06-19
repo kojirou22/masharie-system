@@ -19,6 +19,7 @@ function ExpensesTable({
   currentSearch,
   currentStatus,
   currentAccountType,
+  currentDate,
 }: {
   expenses: Expense[]
   total: number
@@ -26,6 +27,7 @@ function ExpensesTable({
   currentSearch: string
   currentStatus: string
   currentAccountType: string
+  currentDate: string
 }) {
   const pageSize = 25
   const totalPages = Math.ceil(total / pageSize)
@@ -35,6 +37,7 @@ function ExpensesTable({
     if (currentSearch) params.set('search', currentSearch)
     if (currentStatus) params.set('status', currentStatus)
     if (currentAccountType) params.set('account_type', currentAccountType)
+    if (currentDate) params.set('date', currentDate)
     if (nextPage > 1) params.set('page', String(nextPage))
 
     const query = params.toString()
@@ -50,10 +53,10 @@ function ExpensesTable({
               <th className="px-4 py-3 font-semibold text-slate-950">Date</th>
               <th className="px-4 py-3 font-semibold text-slate-950">Check #</th>
               <th className="px-4 py-3 font-semibold text-slate-950">Voucher #</th>
-              <th className="px-4 py-3 font-semibold text-slate-950 text-right">Amount</th>
               <th className="px-4 py-3 font-semibold text-slate-950">Purpose</th>
+              <th className="px-4 py-3 font-semibold text-slate-950">Requested By</th>
+              <th className="px-4 py-3 font-semibold text-slate-950 text-right">Amount</th>
               <th className="px-4 py-3 font-semibold text-slate-950">Account</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -62,18 +65,12 @@ function ExpensesTable({
                 <td className="px-4 py-3 text-gray-600">{formatDate(expense.date)}</td>
                 <td className="px-4 py-3 font-mono text-xs text-gray-600">{expense.check_number}</td>
                 <td className="px-4 py-3 font-mono text-xs text-gray-600">{expense.voucher_number}</td>
-                <td className="px-4 py-3 text-right font-medium">{formatPHP(expense.amount)}</td>
                 <td className="px-4 py-3 text-gray-600">{expense.purpose}</td>
+                <td className="px-4 py-3 text-gray-600">{expense.requested_by}</td>
+                <td className="px-4 py-3 text-right font-medium">{formatPHP(expense.amount)}</td>
                 <td className="px-4 py-3">
                   <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
                     {expense.account_type}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    expense.status === 'Released' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {expense.status}
                   </span>
                 </td>
               </tr>
@@ -108,7 +105,17 @@ function ExpensesTable({
   )
 }
 
-function FilterBar({ currentSearch, currentStatus, currentAccountType }: { currentSearch: string; currentStatus: string; currentAccountType: string }) {
+function FilterBar({
+  currentSearch,
+  currentStatus,
+  currentAccountType,
+  currentDate,
+}: {
+  currentSearch: string
+  currentStatus: string
+  currentAccountType: string
+  currentDate: string
+}) {
   return (
     <AutoFilterForm action="/expenses" className="flex flex-wrap items-end gap-3 rounded-2xl border border-blue-100 bg-white/85 p-4 shadow-sm shadow-blue-100/60">
       <div className="flex-1 min-w-[220px]">
@@ -120,6 +127,16 @@ function FilterBar({ currentSearch, currentStatus, currentAccountType }: { curre
           defaultValue={currentSearch}
           placeholder="Check #, voucher #, purpose, requester..."
           className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+      <div>
+        <label htmlFor="date" className="block text-xs font-medium text-blue-700 mb-1">Date</label>
+        <input
+          id="date"
+          name="date"
+          type="date"
+          defaultValue={currentDate}
+          className="rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
         />
       </div>
       <div>
@@ -163,6 +180,7 @@ export default async function ExpensesPage({
   const search = typeof params.search === 'string' ? params.search : ''
   const status = typeof params.status === 'string' ? params.status : ''
   const account_type = typeof params.account_type === 'string' ? params.account_type : ''
+  const date = typeof params.date === 'string' ? params.date : ''
   const page = typeof params.page === 'string' ? parseInt(params.page) || 1 : 1
 
   const [{ data: expenses, count: total }, { isAdmin }] = await Promise.all([
@@ -170,6 +188,8 @@ export default async function ExpensesPage({
       search,
       status: status as PaymentStatus | undefined,
       account_type: account_type as AccountType | undefined,
+      date_from: date || undefined,
+      date_to: date || undefined,
       page,
     }),
     getAdminUser(),
@@ -195,7 +215,7 @@ export default async function ExpensesPage({
       </div>
 
       <div className="mb-6">
-        <FilterBar currentSearch={search} currentStatus={status} currentAccountType={account_type} />
+        <FilterBar currentSearch={search} currentStatus={status} currentAccountType={account_type} currentDate={date} />
       </div>
 
       <Suspense fallback={<div className="animate-pulse py-16 text-center text-blue-400">Loading expenses...</div>}>
@@ -206,6 +226,7 @@ export default async function ExpensesPage({
           currentSearch={search}
           currentStatus={status}
           currentAccountType={account_type}
+          currentDate={date}
         />
       </Suspense>
     </div>

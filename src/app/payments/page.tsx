@@ -10,7 +10,7 @@ export const revalidate = 3600
 
 const STATUS_OPTIONS: PaymentStatus[] = ['Pending', 'Released', 'Cancelled']
 
-function FilterBar({ currentSearch, currentStatus }: { currentSearch: string; currentStatus: string }) {
+function FilterBar({ currentSearch, currentStatus, currentDate }: { currentSearch: string; currentStatus: string; currentDate: string }) {
   return (
     <AutoFilterForm action="/payments" className="flex flex-wrap items-end gap-3 rounded-2xl border border-blue-100 bg-white/85 p-4 shadow-sm shadow-blue-100/60">
       <div className="flex-1 min-w-[220px]">
@@ -22,6 +22,16 @@ function FilterBar({ currentSearch, currentStatus }: { currentSearch: string; cu
           defaultValue={currentSearch}
           placeholder="Check #, voucher #, notes..."
           className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+      </div>
+      <div>
+        <label htmlFor="date" className="block text-xs font-medium text-blue-700 mb-1">Date</label>
+        <input
+          id="date"
+          name="date"
+          type="date"
+          defaultValue={currentDate}
+          className="rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
         />
       </div>
       <div>
@@ -50,12 +60,15 @@ export default async function PaymentsPage({
   const params = await searchParams
   const search = typeof params.search === 'string' ? params.search : ''
   const status = typeof params.status === 'string' ? params.status : ''
+  const date = typeof params.date === 'string' ? params.date : ''
   const page = typeof params.page === 'string' ? parseInt(params.page) || 1 : 1
 
   const [{ data: payments, count: total }, { isAdmin }] = await Promise.all([
     getPayments({
       search,
       status: status as PaymentStatus | undefined,
+      date_from: date || undefined,
+      date_to: date || undefined,
       page,
     }),
     getAdminUser(),
@@ -81,7 +94,7 @@ export default async function PaymentsPage({
       </div>
 
       <div className="mb-6">
-        <FilterBar currentSearch={search} currentStatus={status} />
+        <FilterBar currentSearch={search} currentStatus={status} currentDate={date} />
       </div>
 
       <Suspense fallback={<div className="animate-pulse py-16 text-center text-blue-400">Loading payments...</div>}>
@@ -91,6 +104,7 @@ export default async function PaymentsPage({
           page={page}
           currentSearch={search}
           currentStatus={status}
+          currentDate={date}
         />
       </Suspense>
     </div>

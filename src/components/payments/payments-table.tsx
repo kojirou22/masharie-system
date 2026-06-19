@@ -5,10 +5,10 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { formatPHP } from '@/lib/utils/currency'
 import { formatDate } from '@/lib/utils/formatters'
-import type { PaymentRelease, PaymentStatus } from '@/lib/types/database'
+import type { PaymentRelease } from '@/lib/types/database'
 
 export type PaymentWithProject = PaymentRelease & {
-  project: { name: string; project_number: string } | null
+  project: { name: string; project_number: string; supervisor: string; address: string } | null
 }
 
 export function PaymentsTable({
@@ -17,12 +17,14 @@ export function PaymentsTable({
   page,
   currentSearch,
   currentStatus,
+  currentDate,
 }: {
   payments: PaymentWithProject[]
   total: number
   page: number
   currentSearch: string
   currentStatus: string
+  currentDate: string
 }) {
   const router = useRouter()
   const pageSize = 25
@@ -45,6 +47,7 @@ export function PaymentsTable({
     const params = new URLSearchParams()
     if (currentSearch) params.set('search', currentSearch)
     if (currentStatus) params.set('status', currentStatus)
+    if (currentDate) params.set('date', currentDate)
     if (nextPage > 1) params.set('page', String(nextPage))
 
     const query = params.toString()
@@ -57,12 +60,13 @@ export function PaymentsTable({
         <table className="w-full text-sm">
           <thead className="bg-slate-50/95 text-left">
             <tr>
-              <th className="px-4 py-3 font-semibold text-slate-950">Project</th>
+              <th className="px-4 py-3 font-semibold text-slate-950">Date</th>
               <th className="px-4 py-3 font-semibold text-slate-950">Check #</th>
               <th className="px-4 py-3 font-semibold text-slate-950">Voucher #</th>
+              <th className="px-4 py-3 font-semibold text-slate-950">Project #</th>
+              <th className="px-4 py-3 font-semibold text-slate-950">Supervisor</th>
+              <th className="px-4 py-3 font-semibold text-slate-950">Address</th>
               <th className="px-4 py-3 font-semibold text-slate-950 text-right">Amount</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Status</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Date</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -79,6 +83,9 @@ export function PaymentsTable({
                   onClick={() => openPaymentProject(payment)}
                   onKeyDown={(event) => handlePaymentKeyDown(event, payment)}
                 >
+                  <td className="px-4 py-3 text-gray-500 text-xs">{formatDate(payment.released_date ?? payment.released_at ?? payment.created_at)}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-gray-600">{payment.check_number ?? '—'}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-gray-600">{payment.voucher_number ?? '—'}</td>
                   <td className="px-4 py-3">
                     {payment.project ? (
                       <span className="font-medium text-blue-700">{payment.project.project_number}</span>
@@ -86,13 +93,9 @@ export function PaymentsTable({
                       <span className="text-gray-400">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-600">{payment.check_number ?? '—'}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-600">{payment.voucher_number ?? '—'}</td>
+                  <td className="px-4 py-3 text-gray-600">{payment.project?.supervisor ?? '—'}</td>
+                  <td className="px-4 py-3 text-gray-600 max-w-[220px] truncate">{payment.project?.address ?? '—'}</td>
                   <td className="px-4 py-3 text-right font-medium">{formatPHP(payment.amount)}</td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={payment.status} />
-                  </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">{formatDate(payment.released_date ?? payment.released_at ?? payment.created_at)}</td>
                 </tr>
               )
             })}
@@ -126,16 +129,4 @@ export function PaymentsTable({
   )
 }
 
-function StatusBadge({ status }: { status: PaymentStatus }) {
-  const styles: Record<PaymentStatus, string> = {
-    Pending: 'bg-amber-100 text-amber-800',
-    Released: 'bg-green-100 text-green-800',
-    Cancelled: 'bg-red-100 text-red-800',
-  }
 
-  return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status]}`}>
-      {status}
-    </span>
-  )
-}

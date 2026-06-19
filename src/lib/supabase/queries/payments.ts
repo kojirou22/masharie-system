@@ -18,7 +18,7 @@ export async function getPayments(filters: PaymentFilters = {}) {
 
   let query = supabase
     .from('payment_releases')
-    .select('*, project:projects(name, project_number)', { count: 'exact' })
+    .select('*, project:projects(name, project_number, supervisor, address)', { count: 'exact' })
 
   if (search) {
     const sanitizedSearch = search.replace(/[,%()]/g, ' ').trim()
