@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Suspense } from 'react'
 import { AutoFilterForm } from '@/components/auto-filter-form'
 import { PaymentsTable, type PaymentWithProject } from '@/components/payments/payments-table'
+import { getAdminUser } from '@/lib/auth/admin'
 import { getPayments } from '@/lib/supabase/queries/payments'
 import type { PaymentStatus } from '@/lib/types/database'
 
@@ -51,11 +52,14 @@ export default async function PaymentsPage({
   const status = typeof params.status === 'string' ? params.status : ''
   const page = typeof params.page === 'string' ? parseInt(params.page) || 1 : 1
 
-  const { data: payments, count: total } = await getPayments({
-    search,
-    status: status as PaymentStatus | undefined,
-    page,
-  })
+  const [{ data: payments, count: total }, { isAdmin }] = await Promise.all([
+    getPayments({
+      search,
+      status: status as PaymentStatus | undefined,
+      page,
+    }),
+    getAdminUser(),
+  ])
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10">
@@ -65,12 +69,14 @@ export default async function PaymentsPage({
         </h1>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500">{total} total payments</span>
-          <Link
-            href="/payments/new"
-            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors"
-          >
-            New Payment
-          </Link>
+          {isAdmin && (
+            <Link
+              href="/payments/new"
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors"
+            >
+              New Payment
+            </Link>
+          )}
         </div>
       </div>
 

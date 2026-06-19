@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { AutoFilterForm } from '@/components/auto-filter-form'
+import { getAdminUser } from '@/lib/auth/admin'
 import { getExpenses } from '@/lib/supabase/queries/expenses'
 import { formatPHP } from '@/lib/utils/currency'
 import { formatDate } from '@/lib/utils/formatters'
@@ -164,12 +165,15 @@ export default async function ExpensesPage({
   const account_type = typeof params.account_type === 'string' ? params.account_type : ''
   const page = typeof params.page === 'string' ? parseInt(params.page) || 1 : 1
 
-  const { data: expenses, count: total } = await getExpenses({
-    search,
-    status: status as PaymentStatus | undefined,
-    account_type: account_type as AccountType | undefined,
-    page,
-  })
+  const [{ data: expenses, count: total }, { isAdmin }] = await Promise.all([
+    getExpenses({
+      search,
+      status: status as PaymentStatus | undefined,
+      account_type: account_type as AccountType | undefined,
+      page,
+    }),
+    getAdminUser(),
+  ])
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10">
@@ -179,12 +183,14 @@ export default async function ExpensesPage({
         </h1>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500">{total} total expenses</span>
-          <Link
-            href="/expenses/new"
-            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors"
-          >
-            New Expense
-          </Link>
+          {isAdmin && (
+            <Link
+              href="/expenses/new"
+              className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors"
+            >
+              New Expense
+            </Link>
+          )}
         </div>
       </div>
 
