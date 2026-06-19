@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Suspense } from 'react'
 import { getDashboardStats } from '@/lib/supabase/queries/dashboard'
 import { getProjects } from '@/lib/supabase/queries/projects'
@@ -15,29 +16,29 @@ export default async function ReportsPage() {
   ])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-purple-900 font-[family-name:var(--font-fira-code)]">
+    <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10">
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <h1 className="text-2xl font-bold text-slate-950 font-[family-name:var(--font-fira-code)]">
           Reports
         </h1>
-        <a
+        <Link
           href="/api/reports"
-          className="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors"
+          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors"
         >
           Download PDF
-        </a>
+        </Link>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard label="Total Projects" value={String(stats.total_projects)} color="purple" />
+        <StatCard label="Total Projects" value={String(stats.total_projects)} color="blue" />
         <StatCard label="Active Projects" value={String(stats.active_projects)} color="blue" />
         <StatCard label="Total Budget" value={formatPHP(stats.total_budget)} color="green" />
         <StatCard label="Total Released" value={formatPHP(stats.total_released)} color="amber" />
       </div>
 
       {/* Charts */}
-      <Suspense fallback={<div className="animate-pulse py-16 text-center text-purple-400">Loading charts...</div>}>
+      <Suspense fallback={<div className="animate-pulse py-16 text-center text-blue-400">Loading charts...</div>}>
         <ReportCharts
           projects={projects.data}
           payments={payments.data}
@@ -50,14 +51,13 @@ export default async function ReportsPage() {
 
 function StatCard({ label, value, color }: { label: string; value: string; color: string }) {
   const colors: Record<string, string> = {
-    purple: 'bg-purple-50 border-purple-200 text-purple-900',
     blue: 'bg-blue-50 border-blue-200 text-blue-900',
     green: 'bg-green-50 border-green-200 text-green-900',
     amber: 'bg-amber-50 border-amber-200 text-amber-900',
   }
 
   return (
-    <div className={`rounded-xl border p-5 ${colors[color]}`}>
+    <div className={`rounded-2xl border p-5 shadow-sm ${colors[color]}`}>
       <p className="text-xs font-medium opacity-70 mb-1">{label}</p>
       <p className="text-2xl font-bold">{value}</p>
     </div>

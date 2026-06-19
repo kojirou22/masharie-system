@@ -1,13 +1,16 @@
 import { Text, View } from '@react-pdf/renderer'
 import { PdfDocument, styles } from '@/lib/pdf/document'
 import { formatPHP } from '@/lib/utils/currency'
+import type { DashboardStats, PaymentRelease, Project } from '@/lib/types/database'
 
-export function BudgetSummaryPdf({ projects, stats }: { projects: any[]; stats: any }) {
+type ProjectWithPayments = Project & { payment_releases?: Pick<PaymentRelease, 'amount' | 'status'>[] | null }
+
+export function BudgetSummaryPdf({ projects, stats }: { projects: ProjectWithPayments[]; stats: DashboardStats }) {
   const totalBudget = projects.reduce((sum, p) => sum + (p.budget || 0), 0)
   const totalReleased = projects.reduce((sum, p) => {
     const released = (p.payment_releases || [])
-      .filter((pay: any) => pay.status === 'Released')
-      .reduce((s: number, pay: any) => s + (pay.amount || 0), 0)
+      .filter((pay) => pay.status === 'Released')
+      .reduce((s, pay) => s + (pay.amount || 0), 0)
     return sum + released
   }, 0)
 

@@ -1,8 +1,9 @@
 import { Text, View } from '@react-pdf/renderer'
 import { PdfDocument, styles } from '@/lib/pdf/document'
 import { formatPHP } from '@/lib/utils/currency'
+import type { Project } from '@/lib/types/database'
 
-export function ProjectOverviewPdf({ projects }: { projects: any[] }) {
+export function ProjectOverviewPdf({ projects }: { projects: Project[] }) {
   return (
     <PdfDocument title="Project Overview Report">
       <View style={styles.section}>

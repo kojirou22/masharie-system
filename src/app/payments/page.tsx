@@ -1,98 +1,34 @@
+import Link from 'next/link'
 import { Suspense } from 'react'
+import { PaymentsTable, type PaymentWithProject } from '@/components/payments/payments-table'
 import { getPayments } from '@/lib/supabase/queries/payments'
-import { formatPHP } from '@/lib/utils/currency'
-import { formatDate } from '@/lib/utils/formatters'
 import type { PaymentStatus } from '@/lib/types/database'
 
 export const revalidate = 3600
 
 const STATUS_OPTIONS: PaymentStatus[] = ['Pending', 'Released', 'Cancelled']
 
-function PaymentsTable({ payments, total, page }: { payments: any[]; total: number; page: number }) {
-  const pageSize = 25
-  const totalPages = Math.ceil(total / pageSize)
-
+function FilterBar({ currentSearch, currentStatus }: { currentSearch: string; currentStatus: string }) {
   return (
-    <div className="space-y-4">
-      <div className="overflow-x-auto rounded-lg border border-purple-100 bg-white">
-        <table className="w-full text-sm">
-          <thead className="bg-purple-50 text-left">
-            <tr>
-              <th className="px-4 py-3 font-semibold text-purple-900">Project</th>
-              <th className="px-4 py-3 font-semibold text-purple-900">Check #</th>
-              <th className="px-4 py-3 font-semibold text-purple-900">Voucher #</th>
-              <th className="px-4 py-3 font-semibold text-purple-900 text-right">Amount</th>
-              <th className="px-4 py-3 font-semibold text-purple-900">Status</th>
-              <th className="px-4 py-3 font-semibold text-purple-900">Date</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-purple-50">
-            {payments.map((payment) => (
-              <tr key={payment.id} className="hover:bg-purple-50/50 transition-colors">
-                <td className="px-4 py-3">
-                  {payment.project ? (
-                    <a href={`/projects/${payment.project_id}`} className="text-purple-700 hover:underline font-medium">
-                      {payment.project.project_number}
-                    </a>
-                  ) : (
-                    <span className="text-gray-400">—</span>
-                  )}
-                </td>
-                <td className="px-4 py-3 font-mono text-xs text-gray-600">{payment.check_number ?? '—'}</td>
-                <td className="px-4 py-3 font-mono text-xs text-gray-600">{payment.voucher_number ?? '—'}</td>
-                <td className="px-4 py-3 text-right font-medium">{formatPHP(payment.amount)}</td>
-                <td className="px-4 py-3">
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    payment.status === 'Released' ? 'bg-green-100 text-green-800' :
-                    payment.status === 'Cancelled' ? 'bg-red-100 text-red-800' :
-                    'bg-amber-100 text-amber-800'
-                  }`}>
-                    {payment.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-gray-500 text-xs">{formatDate(payment.released_at ?? payment.created_at)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <form className="flex flex-wrap items-end gap-3 rounded-2xl border border-blue-100 bg-white/85 p-4 shadow-sm shadow-blue-100/60">
+      <div className="flex-1 min-w-[220px]">
+        <label htmlFor="search" className="block text-xs font-medium text-blue-700 mb-1">Search</label>
+        <input
+          id="search"
+          name="search"
+          type="text"
+          defaultValue={currentSearch}
+          placeholder="Check #, voucher #, notes..."
+          className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
       </div>
-
-      {total === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-          <p className="text-lg font-medium">No payments match your filters</p>
-          <a href="/payments" className="mt-2 text-purple-600 hover:underline text-sm">Clear all filters</a>
-        </div>
-      )}
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-2">
-          <p className="text-sm text-gray-600">
-            Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
-          </p>
-          <div className="flex gap-2">
-            {page > 1 && (
-              <a href={`/payments?page=${page - 1}`} className="rounded-md border border-purple-200 px-3 py-1.5 text-sm hover:bg-purple-50">Previous</a>
-            )}
-            {page < totalPages && (
-              <a href={`/payments?page=${page + 1}`} className="rounded-md border border-purple-200 px-3 py-1.5 text-sm hover:bg-purple-50">Next</a>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function FilterBar({ currentStatus }: { currentStatus: string }) {
-  return (
-    <form className="flex flex-wrap gap-3 items-end">
       <div>
-        <label htmlFor="status" className="block text-xs font-medium text-purple-700 mb-1">Status</label>
+        <label htmlFor="status" className="block text-xs font-medium text-blue-700 mb-1">Status</label>
         <select
           id="status"
           name="status"
           defaultValue={currentStatus}
-          className="rounded-md border border-purple-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+          className="rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
         >
           <option value="">All</option>
           {STATUS_OPTIONS.map((s) => (
@@ -102,7 +38,7 @@ function FilterBar({ currentStatus }: { currentStatus: string }) {
       </div>
       <button
         type="submit"
-        className="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors"
+        className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors"
       >
         Filter
       </button>
@@ -116,37 +52,45 @@ export default async function PaymentsPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const params = await searchParams
+  const search = typeof params.search === 'string' ? params.search : ''
   const status = typeof params.status === 'string' ? params.status : ''
   const page = typeof params.page === 'string' ? parseInt(params.page) || 1 : 1
 
   const { data: payments, count: total } = await getPayments({
+    search,
     status: status as PaymentStatus | undefined,
     page,
   })
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-purple-900 font-[family-name:var(--font-fira-code)]">
+    <div className="max-w-7xl mx-auto px-4 py-8 sm:py-10">
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <h1 className="text-2xl font-bold text-slate-950 font-[family-name:var(--font-fira-code)]">
           Payment Releases
         </h1>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500">{total} total payments</span>
-          <a
+          <Link
             href="/payments/new"
-            className="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 transition-colors"
+            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors"
           >
             New Payment
-          </a>
+          </Link>
         </div>
       </div>
 
       <div className="mb-6">
-        <FilterBar currentStatus={status} />
+        <FilterBar currentSearch={search} currentStatus={status} />
       </div>
 
-      <Suspense fallback={<div className="animate-pulse py-16 text-center text-purple-400">Loading payments...</div>}>
-        <PaymentsTable payments={payments} total={total} page={page} />
+      <Suspense fallback={<div className="animate-pulse py-16 text-center text-blue-400">Loading payments...</div>}>
+        <PaymentsTable
+          payments={payments as PaymentWithProject[]}
+          total={total}
+          page={page}
+          currentSearch={search}
+          currentStatus={status}
+        />
       </Suspense>
     </div>
   )

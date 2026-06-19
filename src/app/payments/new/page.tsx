@@ -1,12 +1,18 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { paymentSchema } from '@/lib/validations/payment'
+import { requireAdmin } from '@/lib/auth/admin'
 import type { PaymentStatus } from '@/lib/types/database'
 
-export default async function NewPaymentPage() {
-  const supabase = await createClient()
+export default async function NewPaymentPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const { supabase } = await requireAdmin()
+  const params = await searchParams
+  const error = typeof params.error === 'string' ? params.error : ''
 
-  // Fetch projects for the select dropdown
   const { data: projects } = await supabase
     .from('projects')
     .select('id, project_number, name')
@@ -15,7 +21,7 @@ export default async function NewPaymentPage() {
   async function createPayment(formData: FormData) {
     'use server'
 
-    const supabase = await createClient()
+    const { supabase, user } = await requireAdmin()
 
     const raw = {
       project_id: formData.get('project_id') as string,
@@ -31,43 +37,45 @@ export default async function NewPaymentPage() {
     if (!parsed.success) {
       const errors = parsed.error.issues.map((i) => i.message).join(', ')
       redirect(`/payments/new?error=${encodeURIComponent(errors)}`)
-      return
     }
-
-    const { data: { user } } = await supabase.auth.getUser()
 
     const { error } = await supabase.from('payment_releases').insert({
       ...parsed.data,
       amount: Number(parsed.data.amount),
-      released_by: user?.id ?? null,
+      released_by: user.id,
+      released_at: parsed.data.released_date || null,
     })
 
     if (error) {
       redirect(`/payments/new?error=${encodeURIComponent(error.message)}`)
-      return
     }
 
     redirect('/payments')
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <a href="/payments" className="text-sm text-purple-600 hover:underline mb-4 inline-block">
+    <div className="max-w-3xl mx-auto px-4 py-8 sm:py-10">
+      <Link href="/payments" className="text-sm text-blue-700 hover:underline mb-4 inline-block">
         ← Back to payments
-      </a>
-      <h1 className="text-2xl font-bold text-purple-900 mb-6 font-[family-name:var(--font-fira-code)]">
+      </Link>
+      <h1 className="text-2xl font-bold text-slate-950 mb-6 font-[family-name:var(--font-fira-code)]">
         New Payment Release
       </h1>
-      <form action={createPayment} className="bg-white rounded-xl border border-purple-100 shadow-sm p-6 space-y-4">
+      {error && (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {decodeURIComponent(error)}
+        </div>
+      )}
+      <form action={createPayment} className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60 space-y-4">
         <div>
-          <label htmlFor="project_id" className="block text-sm font-medium text-purple-700 mb-1">
+          <label htmlFor="project_id" className="block text-sm font-medium text-blue-700 mb-1">
             Project <span className="text-red-500">*</span>
           </label>
           <select
             id="project_id"
             name="project_id"
             required
-            className="w-full rounded-md border border-purple-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+            className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
             <option value="">Select a project...</option>
             {projects?.map((p) => (
@@ -85,18 +93,18 @@ export default async function NewPaymentPage() {
           <Field name="released_date" label="Release Date" type="date" />
         </div>
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium text-purple-700 mb-1">Notes</label>
+          <label htmlFor="notes" className="block text-sm font-medium text-blue-700 mb-1">Notes</label>
           <textarea
             id="notes"
             name="notes"
             rows={3}
             placeholder="Optional notes..."
-            className="w-full rounded-md border border-purple-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <button
           type="submit"
-          className="rounded-md bg-purple-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-purple-700 transition-colors"
+          className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors"
         >
           Create Payment
         </button>
@@ -110,7 +118,7 @@ function Field({ name, label, placeholder, defaultValue, type = 'text', required
 }) {
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-purple-700 mb-1">
+      <label htmlFor={name} className="block text-sm font-medium text-blue-700 mb-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <input
@@ -120,7 +128,7 @@ function Field({ name, label, placeholder, defaultValue, type = 'text', required
         placeholder={placeholder}
         defaultValue={defaultValue}
         required={required}
-        className="w-full rounded-md border border-purple-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+        className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
     </div>
   )
@@ -131,7 +139,7 @@ function SelectField({ name, label, options, defaultValue, required = false }: {
 }) {
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-purple-700 mb-1">
+      <label htmlFor={name} className="block text-sm font-medium text-blue-700 mb-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <select
@@ -139,7 +147,7 @@ function SelectField({ name, label, options, defaultValue, required = false }: {
         name={name}
         required={required}
         defaultValue={defaultValue}
-        className="w-full rounded-md border border-purple-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+        className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
       >
         <option value="">Select...</option>
         {options.map((opt) => (

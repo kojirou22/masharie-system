@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Project, ProjectStatus, ProjectType } from '@/lib/types/database'
+import type { PaymentRelease, Project, ProjectStatus, ProjectType } from '@/lib/types/database'
 
 export interface ProjectFilters {
   search?: string
@@ -12,16 +12,26 @@ export interface ProjectFilters {
   pageSize?: number
 }
 
+type ProjectReleaseSummary = Pick<PaymentRelease, 'amount' | 'status'>
+type ProjectWithReleaseRows = Project & {
+  payment_releases?: ProjectReleaseSummary[] | null
+}
+
 export async function getProjects(filters: ProjectFilters = {}) {
   const supabase = await createClient()
   const { search, status, type, batch_year, donor, supervisor, page = 1, pageSize = 25 } = filters
 
-  let query = supabase.from('projects').select('*')
+  let query = supabase
+    .from('projects')
+    .select('*, payment_releases(amount, status)', { count: 'exact' })
 
   if (search) {
-    query = query.or(
-      `project_number.ilike.%${search}%,name.ilike.%${search}%,donor.ilike.%${search}%,supervisor.ilike.%${search}%,address.ilike.%${search}%`
-    )
+    const sanitizedSearch = search.replace(/[,%()]/g, ' ').trim()
+    if (sanitizedSearch) {
+      query = query.or(
+        `project_number.ilike.%${sanitizedSearch}%,name.ilike.%${sanitizedSearch}%,donor.ilike.%${sanitizedSearch}%,supervisor.ilike.%${sanitizedSearch}%,address.ilike.%${sanitizedSearch}%`
+      )
+    }
   }
   if (status) query = query.eq('status', status)
   if (type) query = query.eq('type', type)
@@ -37,7 +47,21 @@ export async function getProjects(filters: ProjectFilters = {}) {
     .range(from, to)
 
   if (error) throw error
-  return { data: data ?? [], count: count ?? 0, page, pageSize }
+
+  // Calculate total released per project
+  const projectsWithTotals = ((data ?? []) as ProjectWithReleaseRows[]).map((project) => {
+    const releases = project.payment_releases ?? []
+    const totalReleased = releases
+      .filter((r) => r.status === 'Released')
+      .reduce((sum, r) => sum + (r.amount ?? 0), 0)
+
+    return {
+      ...project,
+      total_released: totalReleased,
+    }
+  })
+
+  return { data: projectsWithTotals, count: count ?? 0, page, pageSize }
 }
 
 export async function getProjectById(id: string) {

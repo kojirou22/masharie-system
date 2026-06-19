@@ -1,14 +1,21 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { projectSchema } from '@/lib/validations/project'
+import { requireAdmin } from '@/lib/auth/admin'
 import type { ProjectType, ProjectStatus } from '@/lib/types/database'
 
-export default function NewProjectPage() {
+export default async function NewProjectPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  await requireAdmin()
+  const params = await searchParams
+  const error = typeof params.error === 'string' ? params.error : ''
   async function createProject(formData: FormData) {
     'use server'
 
-    const supabase = await createClient()
+    const { supabase, user } = await requireAdmin()
 
     const raw = {
       project_number: formData.get('project_number') as string,
@@ -32,8 +39,6 @@ export default function NewProjectPage() {
       redirect(`/projects/new?error=${encodeURIComponent(errors)}`)
       return
     }
-
-    const { data: { user } } = await supabase.auth.getUser()
 
     const { error } = await supabase.from('projects').insert({
       ...parsed.data,
@@ -59,6 +64,11 @@ export default function NewProjectPage() {
       <h1 className="text-2xl font-bold text-slate-950 mb-6 font-[family-name:var(--font-fira-code)]">
         New Project
       </h1>
+      {error && (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {decodeURIComponent(error)}
+        </div>
+      )}
       <form action={createProject} className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field name="project_number" label="Project Number" placeholder="2026-00001" required />

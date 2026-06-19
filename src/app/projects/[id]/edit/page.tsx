@@ -1,23 +1,28 @@
 import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { getProjectById } from '@/lib/supabase/queries/projects'
 import { projectSchema } from '@/lib/validations/project'
+import { requireAdmin } from '@/lib/auth/admin'
 import type { ProjectType, ProjectStatus } from '@/lib/types/database'
 
 export default async function EditProjectPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const { id } = await params
-  const supabase = await createClient()
-
+  await requireAdmin()
+  const query = await searchParams
+  const error = typeof query.error === 'string' ? query.error : ''
   const project = await getProjectById(id)
   if (!project) notFound()
 
   async function updateProject(formData: FormData) {
     'use server'
+
+    const { supabase } = await requireAdmin()
 
     const raw = {
       project_number: formData.get('project_number') as string,
@@ -60,6 +65,7 @@ export default async function EditProjectPage({
   async function deleteProject() {
     'use server'
 
+    const { supabase } = await requireAdmin()
     const { error } = await supabase.from('projects').delete().eq('id', id)
 
     if (error) {
@@ -78,6 +84,11 @@ export default async function EditProjectPage({
       <h1 className="text-2xl font-bold text-slate-950 mb-6 font-[family-name:var(--font-fira-code)]">
         Edit Project
       </h1>
+      {error && (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {decodeURIComponent(error)}
+        </div>
+      )}
       <form action={updateProject} className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field name="project_number" label="Project Number" defaultValue={project.project_number} required />
@@ -104,14 +115,15 @@ export default async function EditProjectPage({
           >
             Save Changes
           </button>
-          <button
-            type="button"
-            onClick={deleteProject}
-            className="rounded-xl bg-red-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-red-100 hover:bg-red-700 transition-colors"
-          >
-            Delete Project
-          </button>
         </div>
+      </form>
+      <form action={deleteProject} className="mt-3">
+        <button
+          type="submit"
+          className="rounded-xl bg-red-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-red-100 hover:bg-red-700 transition-colors"
+        >
+          Delete Project
+        </button>
       </form>
     </div>
   )

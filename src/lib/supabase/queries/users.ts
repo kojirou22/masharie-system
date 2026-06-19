@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { UserProfile, UserRole } from '@/lib/types/database'
+import type { UserRole } from '@/lib/types/database'
 
 export interface UserFilters {
   search?: string
@@ -12,10 +12,13 @@ export async function getUsers(filters: UserFilters = {}) {
   const supabase = await createClient()
   const { search, role, page = 1, pageSize = 25 } = filters
 
-  let query = supabase.from('users').select('*')
+  let query = supabase.from('users').select('*', { count: 'exact' })
 
   if (search) {
-    query = query.or(`email.ilike.%${search}%,full_name.ilike.%${search}%`)
+    const sanitizedSearch = search.replace(/[,%()]/g, ' ').trim()
+    if (sanitizedSearch) {
+      query = query.or(`email.ilike.%${sanitizedSearch}%,full_name.ilike.%${sanitizedSearch}%`)
+    }
   }
   if (role) query = query.eq('role', role)
 

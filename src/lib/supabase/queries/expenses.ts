@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Expense, PaymentStatus, AccountType } from '@/lib/types/database'
+import type { PaymentStatus, AccountType } from '@/lib/types/database'
 
 export interface ExpenseFilters {
   search?: string
@@ -15,12 +15,15 @@ export async function getExpenses(filters: ExpenseFilters = {}) {
   const supabase = await createClient()
   const { search, status, account_type, date_from, date_to, page = 1, pageSize = 25 } = filters
 
-  let query = supabase.from('expenses').select('*')
+  let query = supabase.from('expenses').select('*', { count: 'exact' })
 
   if (search) {
-    query = query.or(
-      `check_number.ilike.%${search}%,voucher_number.ilike.%${search}%,purpose.ilike.%${search}%,requested_by.ilike.%${search}%`
-    )
+    const sanitizedSearch = search.replace(/[,%()]/g, ' ').trim()
+    if (sanitizedSearch) {
+      query = query.or(
+        `check_number.ilike.%${sanitizedSearch}%,voucher_number.ilike.%${sanitizedSearch}%,purpose.ilike.%${sanitizedSearch}%,requested_by.ilike.%${sanitizedSearch}%`
+      )
+    }
   }
   if (status) query = query.eq('status', status)
   if (account_type) query = query.eq('account_type', account_type)

@@ -1,13 +1,22 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { expenseSchema } from '@/lib/validations/expense'
+import { requireAdmin } from '@/lib/auth/admin'
 import type { PaymentStatus, AccountType } from '@/lib/types/database'
 
-export default function NewExpensePage() {
+export default async function NewExpensePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  await requireAdmin()
+  const params = await searchParams
+  const error = typeof params.error === 'string' ? params.error : ''
+
   async function createExpense(formData: FormData) {
     'use server'
 
-    const supabase = await createClient()
+    const { supabase, user } = await requireAdmin()
 
     const raw = {
       date: formData.get('date') as string,
@@ -24,34 +33,35 @@ export default function NewExpensePage() {
     if (!parsed.success) {
       const errors = parsed.error.issues.map((i) => i.message).join(', ')
       redirect(`/expenses/new?error=${encodeURIComponent(errors)}`)
-      return
     }
-
-    const { data: { user } } = await supabase.auth.getUser()
 
     const { error } = await supabase.from('expenses').insert({
       ...parsed.data,
       amount: Number(parsed.data.amount),
-      created_by: user?.id ?? null,
+      created_by: user.id,
     })
 
     if (error) {
       redirect(`/expenses/new?error=${encodeURIComponent(error.message)}`)
-      return
     }
 
     redirect('/expenses')
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <a href="/expenses" className="text-sm text-purple-600 hover:underline mb-4 inline-block">
+    <div className="max-w-3xl mx-auto px-4 py-8 sm:py-10">
+      <Link href="/expenses" className="text-sm text-blue-700 hover:underline mb-4 inline-block">
         ← Back to expenses
-      </a>
-      <h1 className="text-2xl font-bold text-purple-900 mb-6 font-[family-name:var(--font-fira-code)]">
+      </Link>
+      <h1 className="text-2xl font-bold text-slate-950 mb-6 font-[family-name:var(--font-fira-code)]">
         New Expense
       </h1>
-      <form action={createExpense} className="bg-white rounded-xl border border-purple-100 shadow-sm p-6 space-y-4">
+      {error && (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {decodeURIComponent(error)}
+        </div>
+      )}
+      <form action={createExpense} className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field name="date" label="Date" type="date" required />
           <Field name="check_number" label="Check Number" placeholder="e.g. 123456" required />
@@ -64,7 +74,7 @@ export default function NewExpensePage() {
         </div>
         <button
           type="submit"
-          className="rounded-md bg-purple-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-purple-700 transition-colors"
+          className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors"
         >
           Create Expense
         </button>
@@ -78,7 +88,7 @@ function Field({ name, label, placeholder, defaultValue, type = 'text', required
 }) {
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-purple-700 mb-1">
+      <label htmlFor={name} className="block text-sm font-medium text-blue-700 mb-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <input
@@ -88,7 +98,7 @@ function Field({ name, label, placeholder, defaultValue, type = 'text', required
         placeholder={placeholder}
         defaultValue={defaultValue}
         required={required}
-        className="w-full rounded-md border border-purple-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+        className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
     </div>
   )
@@ -99,7 +109,7 @@ function SelectField({ name, label, options, defaultValue, required = false }: {
 }) {
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-purple-700 mb-1">
+      <label htmlFor={name} className="block text-sm font-medium text-blue-700 mb-1">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <select
@@ -107,7 +117,7 @@ function SelectField({ name, label, options, defaultValue, required = false }: {
         name={name}
         required={required}
         defaultValue={defaultValue}
-        className="w-full rounded-md border border-purple-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
+        className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
       >
         <option value="">Select...</option>
         {options.map((opt) => (

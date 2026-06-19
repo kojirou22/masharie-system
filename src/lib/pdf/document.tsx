@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 
 const styles = StyleSheet.create({
   page: {
@@ -10,13 +10,13 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 20,
     borderBottomWidth: 2,
-    borderBottomColor: '#7C3AED',
+    borderBottomColor: '#2563EB',
     paddingBottom: 10,
   },
   orgName: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4C1D95',
+    color: '#1E3A8A',
   },
   reportTitle: {
     fontSize: 14,
@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#4C1D95',
+    color: '#1E3A8A',
     marginBottom: 8,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   tableHeader: {
     flexDirection: 'row',
     borderBottomWidth: 2,
-    borderBottomColor: '#7C3AED',
+    borderBottomColor: '#2563EB',
     paddingVertical: 6,
     backgroundColor: '#F3F4F6',
   },
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: 'bold',
     paddingHorizontal: 4,
-    color: '#4C1D95',
+    color: '#1E3A8A',
   },
   footer: {
     position: 'absolute',

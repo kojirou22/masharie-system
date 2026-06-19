@@ -11,16 +11,16 @@ import {
   Pie,
   Cell,
   ResponsiveContainer,
-  Legend,
 } from 'recharts'
 import { formatPHP } from '@/lib/utils/currency'
+import type { Expense, PaymentRelease, Project } from '@/lib/types/database'
 
-const COLORS = ['#7C3AED', '#22C55E', '#F59E0B', '#EF4444', '#3B82F6', '#EC4899', '#14B8A6', '#F97316', '#6366F1']
+const COLORS = ['#2563EB', '#22C55E', '#F59E0B', '#EF4444', '#3B82F6', '#14B8A6', '#F97316', '#6366F1']
 
-export function ReportCharts({ projects, payments, expenses }: {
-  projects: any[]
-  payments: any[]
-  expenses: any[]
+export function ReportCharts({ projects, expenses }: {
+  projects: Project[]
+  payments: PaymentRelease[]
+  expenses: Expense[]
 }) {
   // Projects by type
   const projectsByType = projects.reduce((acc, p) => {
@@ -60,8 +60,8 @@ export function ReportCharts({ projects, payments, expenses }: {
     <div className="space-y-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Projects by Type */}
-        <div className="bg-white rounded-xl border border-purple-100 shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-purple-900 mb-4 font-[family-name:var(--font-fira-code)]">
+        <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60">
+          <h3 className="text-lg font-semibold text-slate-950 mb-4 font-[family-name:var(--font-fira-code)]">
             Projects by Type
           </h3>
           <div className="h-64">
@@ -86,8 +86,8 @@ export function ReportCharts({ projects, payments, expenses }: {
         </div>
 
         {/* Projects by Status */}
-        <div className="bg-white rounded-xl border border-purple-100 shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-purple-900 mb-4 font-[family-name:var(--font-fira-code)]">
+        <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60">
+          <h3 className="text-lg font-semibold text-slate-950 mb-4 font-[family-name:var(--font-fira-code)]">
             Projects by Status
           </h3>
           <div className="h-64">
@@ -113,18 +113,18 @@ export function ReportCharts({ projects, payments, expenses }: {
       </div>
 
       {/* Budget by Type */}
-      <div className="bg-white rounded-xl border border-purple-100 shadow-sm p-6">
-        <h3 className="text-lg font-semibold text-purple-900 mb-4 font-[family-name:var(--font-fira-code)]">
+      <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60">
+        <h3 className="text-lg font-semibold text-slate-950 mb-4 font-[family-name:var(--font-fira-code)]">
           Budget by Project Type
         </h3>
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={budgetData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E9D5FF" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#DBEAFE" />
               <XAxis dataKey="name" tick={{ fontSize: 12 }} />
               <YAxis tickFormatter={(v) => `₱${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
               <Tooltip formatter={(value) => formatPHP(Number(value))} />
-              <Bar dataKey="value" fill="#7C3AED" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="value" fill="#2563EB" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -132,18 +132,18 @@ export function ReportCharts({ projects, payments, expenses }: {
 
       {/* Expenses by Account */}
       {expenseData.length > 0 && (
-        <div className="bg-white rounded-xl border border-purple-100 shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-purple-900 mb-4 font-[family-name:var(--font-fira-code)]">
+        <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60">
+          <h3 className="text-lg font-semibold text-slate-950 mb-4 font-[family-name:var(--font-fira-code)]">
             Expenses by Account Type
           </h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={expenseData} layout="vertical" margin={{ top: 5, right: 30, left: 80, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E9D5FF" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#DBEAFE" />
                 <XAxis type="number" tickFormatter={(v) => `₱${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 12 }} />
                 <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={100} />
                 <Tooltip formatter={(value) => formatPHP(Number(value))} />
-                <Bar dataKey="value" fill="#A78BFA" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="value" fill="#3B82F6" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

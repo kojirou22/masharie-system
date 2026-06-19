@@ -2,11 +2,28 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { loginSchema } from '@/lib/validations/auth'
 
-export default function LoginPage() {
+function safeRedirectPath(value: string | undefined) {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) {
+    return '/dashboard'
+  }
+
+  return value
+}
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const params = await searchParams
+  const error = typeof params.error === 'string' ? params.error : ''
+  const redirectTo = safeRedirectPath(typeof params.redirect === 'string' ? params.redirect : undefined)
+
   async function login(formData: FormData) {
     'use server'
 
     const supabase = await createClient()
+    const requestedRedirect = safeRedirectPath(formData.get('redirect') as string | undefined)
 
     const raw = {
       email: formData.get('email') as string,
@@ -16,18 +33,15 @@ export default function LoginPage() {
     const parsed = loginSchema.safeParse(raw)
     if (!parsed.success) {
       const errors = parsed.error.issues.map((i) => i.message).join(', ')
-      redirect(`/login?error=${encodeURIComponent(errors)}`)
-      return
+      redirect(`/login?error=${encodeURIComponent(errors)}&redirect=${encodeURIComponent(requestedRedirect)}`)
     }
 
     const { error } = await supabase.auth.signInWithPassword(parsed.data)
 
     if (error) {
-      redirect(`/login?error=${encodeURIComponent('Invalid credentials')}`)
-      return
+      redirect(`/login?error=${encodeURIComponent('Invalid credentials')}&redirect=${encodeURIComponent(requestedRedirect)}`)
     }
 
-    // Verify the user is an admin
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const { data: profile } = await supabase
@@ -39,18 +53,14 @@ export default function LoginPage() {
       if (!profile || profile.role !== 'admin') {
         await supabase.auth.signOut()
         redirect(`/login?error=${encodeURIComponent('Access denied. Admin only.')}`)
-        return
       }
     }
 
-    redirect('/dashboard')
+    redirect(requestedRedirect)
   }
 
-  const params = new URLSearchParams()
-  const error = params.get('error')
-
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center min-h-screen px-4">
       <div className="rounded-2xl border border-blue-100 bg-white p-8 shadow-sm shadow-blue-100/60 w-full max-w-sm">
         <h1 className="text-xl font-bold text-slate-950 mb-2 text-center font-[family-name:var(--font-fira-code)]">
           Admin Login
@@ -60,12 +70,13 @@ export default function LoginPage() {
         </p>
 
         {error && (
-          <div className="mb-4 p-3 rounded-md bg-red-50 border border-red-200 text-sm text-red-700">
+          <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
             {decodeURIComponent(error)}
           </div>
         )}
 
         <form action={login} className="space-y-4">
+          <input type="hidden" name="redirect" value={redirectTo} />
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-blue-700 mb-1">
               Email
@@ -94,7 +105,7 @@ export default function LoginPage() {
           </div>
           <button
             type="submit"
-            className="w-full rounded-md bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors"
           >
             Sign In
           </button>

@@ -1,114 +1,12 @@
-import Link from 'next/link'
 import { Suspense } from 'react'
+import { ProjectsTable } from '@/components/projects/projects-table'
 import { getProjects } from '@/lib/supabase/queries/projects'
-import { formatPHP } from '@/lib/utils/currency'
-import { formatDate } from '@/lib/utils/formatters'
-import type { Project, ProjectStatus, ProjectType } from '@/lib/types/database'
+import type { ProjectStatus, ProjectType } from '@/lib/types/database'
 
 export const revalidate = 3600
 
 const STATUS_OPTIONS: ProjectStatus[] = ['Pending', 'On Going', 'On Hold', 'Completed', 'Cancelled']
 const TYPE_OPTIONS: ProjectType[] = ['Mosque', 'House', 'Store', 'School Room', 'Tank', 'Well', 'School', 'Food Aid', 'Markaz']
-
-function ProjectsTable({ projects, total, page }: { projects: Project[]; total: number; page: number }) {
-  const pageSize = 25
-  const totalPages = Math.ceil(total / pageSize)
-
-  return (
-    <div className="space-y-4">
-      <div className="overflow-x-auto rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/60">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50/95 text-left">
-            <tr>
-              <th className="px-4 py-3 font-semibold text-slate-950">Project #</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Name</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Donor</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Type</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Status</th>
-              <th className="px-4 py-3 font-semibold text-slate-950 text-right">Budget</th>
-              <th className="px-4 py-3 font-semibold text-slate-950">Updated</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {projects.map((project) => (
-              <tr key={project.id} className="hover:bg-blue-50/60 transition-colors">
-                <td className="px-4 py-3 font-mono text-xs text-blue-700">{project.project_number}</td>
-                <td className="px-4 py-3 font-medium">
-                  <Link href={`/projects/${project.id}`} className="text-blue-700 hover:text-slate-950 hover:underline">
-                    {project.name}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-gray-600">{project.donor}</td>
-                <td className="px-4 py-3">
-                  <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-                    {project.type}
-                  </span>
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={project.status} />
-                </td>
-                <td className="px-4 py-3 text-right font-medium">{formatPHP(project.budget)}</td>
-                <td className="px-4 py-3 text-gray-500 text-xs">{formatDate(project.updated_at)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {total === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-          <svg className="w-12 h-12 mb-3 text-blue-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-          </svg>
-          <p className="text-lg font-medium">No projects match your filters</p>
-          <Link href="/projects" className="mt-2 text-blue-700 hover:underline text-sm">Clear all filters</Link>
-        </div>
-      )}
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-2">
-          <p className="text-sm text-gray-600">
-            Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
-          </p>
-          <div className="flex gap-2">
-            {page > 1 && (
-              <Link
-                href={`/projects?page=${page - 1}`}
-                className="rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 shadow-sm hover:bg-slate-50 transition-colors"
-              >
-                Previous
-              </Link>
-            )}
-            {page < totalPages && (
-              <Link
-                href={`/projects?page=${page + 1}`}
-                className="rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 shadow-sm hover:bg-slate-50 transition-colors"
-              >
-                Next
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function StatusBadge({ status }: { status: ProjectStatus }) {
-  const styles: Record<ProjectStatus, string> = {
-    'Pending': 'bg-amber-100 text-amber-800',
-    'On Going': 'bg-blue-100 text-blue-800',
-    'On Hold': 'bg-orange-100 text-orange-800',
-    'Completed': 'bg-green-100 text-green-800',
-    'Cancelled': 'bg-red-100 text-red-800',
-  }
-
-  return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[status]}`}>
-      {status}
-    </span>
-  )
-}
 
 function FilterBar({ currentSearch, currentStatus, currentType }: { currentSearch: string; currentStatus: string; currentType: string }) {
   return (

@@ -1,11 +1,12 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdminResponse } from '@/lib/auth/admin'
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
-  const supabase = await createClient()
+  const admin = await requireAdminResponse()
+  if (admin.response) return admin.response
 
-  // Check for existing payments
+  const { id } = await params
+  const { supabase } = admin
+
   const { data: payments } = await supabase
     .from('payment_releases')
     .select('id')

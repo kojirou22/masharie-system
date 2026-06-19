@@ -1,8 +1,9 @@
 import { Text, View } from '@react-pdf/renderer'
 import { PdfDocument, styles } from '@/lib/pdf/document'
 import { formatPHP } from '@/lib/utils/currency'
+import type { PaymentRelease } from '@/lib/types/database'
 
-export function PaymentHistoryPdf({ payments }: { payments: any[] }) {
+export function PaymentHistoryPdf({ payments }: { payments: Array<PaymentRelease & { project?: { project_number: string } | null }> }) {
   const total = payments.reduce((sum, p) => sum + (p.amount || 0), 0)
 
   return (

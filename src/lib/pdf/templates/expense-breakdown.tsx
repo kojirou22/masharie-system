@@ -1,8 +1,9 @@
 import { Text, View } from '@react-pdf/renderer'
 import { PdfDocument, styles } from '@/lib/pdf/document'
 import { formatPHP } from '@/lib/utils/currency'
+import type { Expense } from '@/lib/types/database'
 
-export function ExpenseBreakdownPdf({ expenses }: { expenses: any[] }) {
+export function ExpenseBreakdownPdf({ expenses }: { expenses: Expense[] }) {
   const total = expenses.reduce((sum, e) => sum + (e.amount || 0), 0)
 
   return (
