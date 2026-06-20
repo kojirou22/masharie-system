@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/auth/admin'
 import { loginSchema } from '@/lib/validations/auth'
 
 function safeRedirectPath(value: string | undefined) {
@@ -42,18 +43,12 @@ export default async function LoginPage({
       redirect(`/login?error=${encodeURIComponent('Invalid credentials')}&redirect=${encodeURIComponent(requestedRedirect)}`)
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { data: profile } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-      if (!profile || profile.role !== 'admin') {
-        await supabase.auth.signOut()
-        redirect(`/login?error=${encodeURIComponent('Access denied. Admin only.')}`)
-      }
+    // Single source of truth for admin check — same logic as proxy.ts
+    try {
+      await requireAdmin()
+    } catch {
+      await supabase.auth.signOut()
+      redirect(`/login?error=${encodeURIComponent('Access denied. Admin only.')}`)
     }
 
     redirect(requestedRedirect)

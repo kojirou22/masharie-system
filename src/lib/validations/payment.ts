@@ -7,7 +7,7 @@ export const paymentSchema = z.object({
   amount: z.coerce.number().positive('Amount must be positive'),
   status: z.enum(['Pending', 'Released', 'Cancelled']),
   notes: z.string().optional().nullable(),
-  released_date: z.string().optional().nullable(),
+  released_date: z.string().date().optional().nullable(),
 })
 
 export type PaymentInput = z.infer<typeof paymentSchema>

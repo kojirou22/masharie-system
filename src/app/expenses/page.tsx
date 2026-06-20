@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { AutoFilterForm } from '@/components/auto-filter-form';
-import { getAdminUser } from '@/lib/auth/admin';
 import { getExpenses } from '@/lib/supabase/queries/expenses';
 import { formatPHP } from '@/lib/utils/currency';
 import { formatDate } from '@/lib/utils/formatters';

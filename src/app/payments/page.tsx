@@ -5,7 +5,6 @@ import {
   PaymentsTable,
   type PaymentWithProject,
 } from '@/components/payments/payments-table';
-import { getAdminUser } from '@/lib/auth/admin';
 import { getPayments } from '@/lib/supabase/queries/payments';
 import type { PaymentStatus } from '@/lib/types/database';
 

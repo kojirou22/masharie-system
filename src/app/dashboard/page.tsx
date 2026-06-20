@@ -1,16 +1,13 @@
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { ReportCharts } from '@/components/reports/report-charts'
-import { getDashboardStats } from '@/lib/supabase/queries/dashboard'
-import { getExpenses } from '@/lib/supabase/queries/expenses'
-import { getProjects } from '@/lib/supabase/queries/projects'
+import { getDashboardStats, getChartData } from '@/lib/supabase/queries/dashboard'
 import { formatPHP } from '@/lib/utils/currency'
 
 export default async function DashboardPage() {
-  const [stats, projects, expenses] = await Promise.all([
+  const [stats, chartData] = await Promise.all([
     getDashboardStats(),
-    getProjects({ pageSize: 1000 }),
-    getExpenses({ pageSize: 1000 }),
+    getChartData(),
   ])
 
   return (
@@ -49,7 +46,7 @@ export default async function DashboardPage() {
       </div>
 
       <Suspense fallback={<div className="animate-pulse py-16 text-center text-blue-400">Loading charts...</div>}>
-        <ReportCharts projects={projects.data} expenses={expenses.data} />
+        <ReportCharts chartData={chartData} />
       </Suspense>
     </div>
   )

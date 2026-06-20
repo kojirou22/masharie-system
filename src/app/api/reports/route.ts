@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getDashboardStats } from '@/lib/supabase/queries/dashboard'
+import { getDashboardStats, getChartData } from '@/lib/supabase/queries/dashboard'
 import { getProjects } from '@/lib/supabase/queries/projects'
 import { getPayments } from '@/lib/supabase/queries/payments'
 import { getExpenses } from '@/lib/supabase/queries/expenses'
@@ -34,13 +34,16 @@ export async function GET(request: NextRequest) {
     return new Response('Forbidden', { status: 403 })
   }
 
-  // Fetch data
-  const [stats, projects, payments, expenses] = await Promise.all([
+  // Fetch data — use reasonable limits for PDF export
+  const [stats, chartData, payments, expenses] = await Promise.all([
     getDashboardStats(),
-    getProjects({ pageSize: 1000 }),
-    getPayments({ pageSize: 1000 }),
-    getExpenses({ pageSize: 1000 }),
+    getChartData(),
+    getPayments({ pageSize: 500 }),
+    getExpenses({ pageSize: 500 }),
   ])
+
+  // For PDFs we need full project data but cap at 500 for performance
+  const { data: projects } = await getProjects({ pageSize: 500 })
 
   let pdfDoc: ReactElement<DocumentProps>
   let filename: string

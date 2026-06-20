@@ -21,3 +21,40 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     total_released,
   }
 }
+
+/**
+ * Aggregated data for charts — avoids loading thousands of rows.
+ * Returns budget totals grouped by project type and status counts.
+ */
+export async function getChartData() {
+  const supabase = await createClient()
+
+  const [projectsByType, projectsByStatus, budgetByType] = await Promise.all([
+    supabase.from('projects').select('type'),
+    supabase.from('projects').select('status'),
+    supabase.from('projects').select('type, budget'),
+  ])
+
+  const typeCounts: Record<string, number> = {}
+  for (const p of projectsByType.data ?? []) {
+    typeCounts[p.type] = (typeCounts[p.type] || 0) + 1
+  }
+
+  const statusCounts: Record<string, number> = {}
+  for (const p of projectsByStatus.data ?? []) {
+    statusCounts[p.status] = (statusCounts[p.status] || 0) + 1
+  }
+
+  const budgetByTypeMap: Record<string, number> = {}
+  for (const p of budgetByType.data ?? []) {
+    budgetByTypeMap[p.type] = (budgetByTypeMap[p.type] || 0) + (p.budget ?? 0)
+  }
+
+  return {
+    projectsByType: Object.entries(typeCounts).map(([name, value]) => ({ name, value })),
+    projectsByStatus: Object.entries(statusCounts).map(([name, value]) => ({ name, value })),
+    budgetByType: Object.entries(budgetByTypeMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value),
+  }
+}
