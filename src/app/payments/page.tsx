@@ -25,7 +25,7 @@ function FilterBar({
   return (
     <AutoFilterForm
       action="/payments"
-      className="grid gap-3 rounded-3xl border border-blue-100 bg-white/90 p-4 shadow-sm shadow-blue-100/60 backdrop-blur sm:grid-cols-2 lg:grid-cols-[minmax(260px,1fr)_auto_auto] lg:items-end"
+      className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(420px,1fr)_auto_auto] lg:items-end"
     >
       <div className="sm:col-span-2 lg:col-span-1">
         <label
@@ -40,7 +40,7 @@ function FilterBar({
           type="text"
           defaultValue={currentSearch}
           placeholder="Check #, voucher #, notes..."
-          className="h-11 w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-blue-200 px-3 py-1.5 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
@@ -55,7 +55,7 @@ function FilterBar({
           name="date"
           type="date"
           defaultValue={currentDate}
-          className="h-11 w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-40"
         />
       </div>
       <div>
@@ -69,7 +69,7 @@ function FilterBar({
           id="status"
           name="status"
           defaultValue={currentStatus}
-          className="h-11 w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-28"
         >
           <option value="">All</option>
           {STATUS_OPTIONS.map((s) => (
@@ -106,19 +106,13 @@ export default async function PaymentsPage({
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10">
-      <div className="mb-6 rounded-3xl border border-blue-100 bg-white/85 p-5 shadow-sm shadow-blue-100/60 backdrop-blur sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mx-auto max-w-7xl px-4 py-4 sm:py-6">
+      <div className="mb-4 rounded-3xl border border-blue-100 bg-white/85 p-5 shadow-sm shadow-blue-100/60 backdrop-blur sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
-              Disbursement tracking
-            </p>
             <h1 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
               Payment Releases
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Review checks, vouchers, and recorded payment amounts.
-            </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <span className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
@@ -134,9 +128,6 @@ export default async function PaymentsPage({
             )}
           </div>
         </div>
-      </div>
-
-      <div className="mb-6">
         <FilterBar
           currentSearch={search}
           currentStatus={status}

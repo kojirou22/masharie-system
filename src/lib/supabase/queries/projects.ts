@@ -13,9 +13,8 @@ export interface ProjectFilters {
   pageSize?: number
 }
 
-type ProjectReleaseSummary = Pick<PaymentRelease, 'amount' | 'status'>
 type ProjectWithReleaseRows = Project & {
-  payment_releases?: ProjectReleaseSummary[] | null
+  payment_releases?: PaymentRelease[] | null
 }
 
 export async function getProjects(filters: ProjectFilters = {}) {
@@ -24,7 +23,7 @@ export async function getProjects(filters: ProjectFilters = {}) {
 
   let query = supabase
     .from('projects')
-    .select('*, payment_releases(amount, status)', { count: 'exact' })
+    .select('*, payment_releases(*)', { count: 'exact' })
 
   if (search) {
     const sanitizedSearch = search.replace(/[,%()]/g, ' ').trim()

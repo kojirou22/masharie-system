@@ -41,7 +41,7 @@ function FilterBar({
   return (
     <AutoFilterForm
       action="/projects"
-      className="grid gap-3 rounded-3xl border border-blue-100 bg-white/90 p-4 shadow-sm shadow-blue-100/60 backdrop-blur sm:grid-cols-2 lg:grid-cols-[minmax(260px,1fr)_auto_auto_auto_auto] lg:items-end"
+      className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(360px,1fr)_auto_auto_auto_auto] lg:items-end"
     >
       <div className="sm:col-span-2 lg:col-span-1">
         <label
@@ -56,7 +56,7 @@ function FilterBar({
           type="text"
           defaultValue={currentSearch}
           placeholder="Project #, name, donor, supervisor, address..."
-          className="h-11 w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-blue-200 px-3 py-1.5 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
@@ -70,7 +70,7 @@ function FilterBar({
           id="status"
           name="status"
           defaultValue={currentStatus}
-          className="h-11 w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-28"
         >
           <option value="">All</option>
           {STATUS_OPTIONS.map((s) => (
@@ -91,7 +91,7 @@ function FilterBar({
           id="type"
           name="type"
           defaultValue={currentType}
-          className="h-11 w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-28"
         >
           <option value="">All</option>
           {TYPE_OPTIONS.map((t) => (
@@ -114,7 +114,7 @@ function FilterBar({
           type="text"
           defaultValue={currentBatchNumber}
           placeholder="1"
-          className="h-11 w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-24"
+          className="h-9 w-full rounded-lg border border-blue-200 px-3 py-1.5 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-24"
         />
       </div>
       <div>
@@ -130,7 +130,7 @@ function FilterBar({
           type="number"
           defaultValue={currentBatchYear}
           placeholder="2026"
-          className="h-11 w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-28"
+          className="h-9 w-full rounded-lg border border-blue-200 px-3 py-1.5 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-28"
         />
       </div>
     </AutoFilterForm>
@@ -162,27 +162,18 @@ export default async function ProjectsPage({
   });
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10">
-      <div className="mb-6 rounded-3xl border border-blue-100 bg-white/85 p-5 shadow-sm shadow-blue-100/60 backdrop-blur sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mx-auto max-w-7xl px-4 py-4 sm:py-6">
+      <div className="mb-4 rounded-3xl border border-blue-100 bg-white/85 p-5 shadow-sm shadow-blue-100/60 backdrop-blur sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
-              Project registry
-            </p>
             <h1 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
               Projects
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Filter by project type, batch number, names, or location.
-            </p>
           </div>
           <span className="inline-flex w-fit items-center rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
             {total} total projects
           </span>
         </div>
-      </div>
-
-      <div className="mb-6">
         <FilterBar
           currentSearch={search}
           currentStatus={status}

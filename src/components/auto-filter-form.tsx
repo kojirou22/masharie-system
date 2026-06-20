@@ -26,6 +26,11 @@ export function AutoFilterForm({
     }, delay)
   }
 
+  function handleAutoSubmit(target: EventTarget) {
+    const isTypingInput = target instanceof HTMLInputElement && ['number', 'search', 'text'].includes(target.type)
+    submitForm(isTypingInput ? 300 : 0)
+  }
+
   return (
     <Form
       ref={formRef}
@@ -33,14 +38,16 @@ export function AutoFilterForm({
       replace
       scroll={false}
       className={className}
-      onChange={(event) => {
-        const target = event.target
-        const isTypingInput = target instanceof HTMLInputElement && ['number', 'search', 'text'].includes(target.type)
-
-        submitForm(isTypingInput ? 300 : 0)
-      }}
+      onChange={(event) => handleAutoSubmit(event.target)}
+      onInput={(event) => handleAutoSubmit(event.target)}
     >
       {children}
+      <button
+        type="submit"
+        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm shadow-blue-200 sm:hidden"
+      >
+        Apply filters
+      </button>
     </Form>
   )
 }

@@ -86,6 +86,7 @@ button,
 a,
 select,
 input {
+  touch-action: manipulation;
   transition-property: color, background-color, border-color, box-shadow, transform, opacity;
   transition-duration: 180ms;
   transition-timing-function: ease-out;
@@ -198,6 +199,38 @@ textarea {
 [data-theme="dark"] .shadow-blue-200,
 [data-theme="dark"] .shadow-slate-300\/50 {
   --tw-shadow-color: rgb(2 6 23 / 0.45);
+}
+
+.project-drawer-backdrop {
+  animation: project-drawer-fade-in 180ms ease-out;
+}
+
+.project-drawer-panel {
+  animation: project-drawer-slide-in 220ms ease-out;
+}
+
+.arabic-text {
+  font-size: 1.08em;
+  font-weight: 400 !important;
+  line-height: 1.7;
+}
+
+@keyframes project-drawer-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes project-drawer-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -4,12 +4,15 @@ import type { KeyboardEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { formatPHP } from '@/lib/utils/currency'
-import { formatDate } from '@/lib/utils/formatters'
+import { arabicTextClass, formatDate } from '@/lib/utils/formatters'
 import type { PaymentRelease } from '@/lib/types/database'
 
 export type PaymentWithProject = PaymentRelease & {
   project: { name: string; project_number: string; supervisor: string; address: string } | null
 }
+
+const headerCellClass =
+  'sticky top-0 z-20 bg-slate-100 px-4 py-3 font-bold text-slate-950 shadow-[inset_0_-1px_0_rgba(148,163,184,0.35)]'
 
 export function PaymentsTable({
   payments,
@@ -60,17 +63,17 @@ export function PaymentsTable({
         <div className="border-b border-blue-100 bg-blue-50/60 px-4 py-2 text-xs font-medium text-blue-700 sm:hidden">
           Swipe horizontally to see project details and amounts.
         </div>
-        <div className="overflow-x-auto">
+        <div className="max-h-[calc(100vh-10rem)] overflow-auto">
         <table className="w-full min-w-[920px] text-sm">
-          <thead className="sticky top-0 z-10 bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
+          <thead className="bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
             <tr>
-              <th className="px-4 py-3 font-bold text-slate-950">Date</th>
-              <th className="px-4 py-3 font-bold text-slate-950">Check #</th>
-              <th className="px-4 py-3 font-bold text-slate-950">Voucher #</th>
-              <th className="px-4 py-3 font-bold text-slate-950">Project #</th>
-              <th className="px-4 py-3 font-bold text-slate-950">Supervisor</th>
-              <th className="px-4 py-3 font-bold text-slate-950">Address</th>
-              <th className="px-4 py-3 font-bold text-slate-950 text-right">Amount</th>
+              <th className={headerCellClass}>Date</th>
+              <th className={headerCellClass}>Check #</th>
+              <th className={headerCellClass}>Voucher #</th>
+              <th className={headerCellClass}>Project #</th>
+              <th className={headerCellClass}>Supervisor</th>
+              <th className={headerCellClass}>Address</th>
+              <th className={`${headerCellClass} text-right`}>Amount</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -97,8 +100,8 @@ export function PaymentsTable({
                       <span className="text-gray-400">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{payment.project?.supervisor ?? '—'}</td>
-                  <td className="px-4 py-3 text-gray-600 max-w-[220px] truncate">{payment.project?.address ?? '—'}</td>
+                  <td className={`px-4 py-3 text-gray-600 ${arabicTextClass(payment.project?.supervisor)}`}>{payment.project?.supervisor ?? '—'}</td>
+                  <td className={`px-4 py-3 text-gray-600 max-w-[220px] truncate ${arabicTextClass(payment.project?.address)}`}>{payment.project?.address ?? '—'}</td>
                   <td className="px-4 py-3 text-right font-medium">{formatPHP(payment.amount)}</td>
                 </tr>
               )

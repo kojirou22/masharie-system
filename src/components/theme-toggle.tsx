@@ -1,7 +1,7 @@
 'use client'
 
 import { Moon, Sun } from 'lucide-react'
-import { useSyncExternalStore } from 'react'
+import { useRef, useSyncExternalStore } from 'react'
 
 type Theme = 'light' | 'dark'
 
@@ -42,6 +42,7 @@ function getServerSnapshot(): Theme {
 
 export function ThemeToggle() {
   const theme = useSyncExternalStore(subscribe, getPreferredTheme, getServerSnapshot)
+  const handledTouchRef = useRef(false)
 
   function toggleTheme() {
     const nextTheme = theme === 'dark' ? 'light' : 'dark'
@@ -55,8 +56,20 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      className="inline-flex h-10 items-center gap-2 rounded-full border border-blue-100 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm shadow-blue-100/60 hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-      onClick={toggleTheme}
+      className="inline-flex h-10 w-10 touch-manipulation items-center justify-center gap-2 rounded-full border border-blue-100 bg-white px-2.5 text-sm font-semibold text-slate-700 shadow-sm shadow-blue-100/60 hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:w-auto sm:px-3"
+      onClick={() => {
+        if (handledTouchRef.current) {
+          handledTouchRef.current = false
+          return
+        }
+
+        toggleTheme()
+      }}
+      onTouchEnd={(event) => {
+        event.preventDefault()
+        handledTouchRef.current = true
+        toggleTheme()
+      }}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       aria-pressed={isDark}
       suppressHydrationWarning
@@ -66,7 +79,7 @@ export function ThemeToggle() {
         <Sun className={`absolute inset-0 h-4 w-4 transition-all ${isDark ? 'scale-0 rotate-90 opacity-0' : 'scale-100 rotate-0 opacity-100'}`} />
         <Moon className={`absolute inset-0 h-4 w-4 transition-all ${isDark ? 'scale-100 rotate-0 opacity-100' : 'scale-0 -rotate-90 opacity-0'}`} />
       </span>
-      <span suppressHydrationWarning>{isDark ? 'Dark' : 'Light'}</span>
+      <span className="hidden sm:inline" suppressHydrationWarning>{isDark ? 'Dark' : 'Light'}</span>
     </button>
   )
 }

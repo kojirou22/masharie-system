@@ -4,7 +4,7 @@ import { AutoFilterForm } from '@/components/auto-filter-form';
 import { getAdminUser } from '@/lib/auth/admin';
 import { getExpenses } from '@/lib/supabase/queries/expenses';
 import { formatPHP } from '@/lib/utils/currency';
-import { formatDate } from '@/lib/utils/formatters';
+import { arabicTextClass, formatDate } from '@/lib/utils/formatters';
 import type { Expense, PaymentStatus, AccountType } from '@/lib/types/database';
 
 export const revalidate = 3600;
@@ -15,6 +15,9 @@ const ACCOUNT_OPTIONS: AccountType[] = [
   'Expenses Account',
   'Savings Account',
 ];
+
+const headerCellClass =
+  'sticky top-0 z-20 bg-slate-100 px-4 py-3 font-bold text-slate-950 shadow-[inset_0_-1px_0_rgba(148,163,184,0.35)]';
 
 function ExpensesTable({
   expenses,
@@ -54,23 +57,17 @@ function ExpensesTable({
         <div className="border-b border-blue-100 bg-blue-50/60 px-4 py-2 text-xs font-medium text-blue-700 sm:hidden">
           Swipe horizontally to see requester, amount, and account.
         </div>
-        <div className="overflow-x-auto">
+        <div className="max-h-[calc(100vh-10rem)] overflow-auto">
           <table className="w-full min-w-[900px] text-sm">
-            <thead className="sticky top-0 z-10 bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
+            <thead className="bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
               <tr>
-                <th className="px-4 py-3 font-bold text-slate-950">Date</th>
-                <th className="px-4 py-3 font-bold text-slate-950">Check #</th>
-                <th className="px-4 py-3 font-bold text-slate-950">
-                  Voucher #
-                </th>
-                <th className="px-4 py-3 font-bold text-slate-950">Purpose</th>
-                <th className="px-4 py-3 font-bold text-slate-950">
-                  Requested By
-                </th>
-                <th className="px-4 py-3 font-bold text-slate-950 text-right">
-                  Amount
-                </th>
-                <th className="px-4 py-3 font-bold text-slate-950">Account</th>
+                <th className={headerCellClass}>Date</th>
+                <th className={headerCellClass}>Check #</th>
+                <th className={headerCellClass}>Voucher #</th>
+                <th className={headerCellClass}>Purpose</th>
+                <th className={headerCellClass}>Requested By</th>
+                <th className={`${headerCellClass} text-right`}>Amount</th>
+                <th className={headerCellClass}>Account</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -88,8 +85,8 @@ function ExpensesTable({
                   <td className="px-4 py-3 font-mono text-xs text-gray-600">
                     {expense.voucher_number}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{expense.purpose}</td>
-                  <td className="px-4 py-3 text-gray-600">
+                  <td className={`px-4 py-3 text-gray-600 ${arabicTextClass(expense.purpose)}`}>{expense.purpose}</td>
+                  <td className={`px-4 py-3 text-gray-600 ${arabicTextClass(expense.requested_by)}`}>
                     {expense.requested_by}
                   </td>
                   <td className="px-4 py-3 text-right font-medium">
@@ -163,7 +160,7 @@ function FilterBar({
   return (
     <AutoFilterForm
       action="/expenses"
-      className="grid gap-3 rounded-3xl border border-blue-100 bg-white/90 p-4 shadow-sm shadow-blue-100/60 backdrop-blur sm:grid-cols-2 lg:grid-cols-[minmax(260px,1fr)_auto_auto_auto] lg:items-end"
+      className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(360px,1fr)_auto_auto_auto] lg:items-end"
     >
       <div className="sm:col-span-2 lg:col-span-1">
         <label
@@ -178,7 +175,7 @@ function FilterBar({
           type="text"
           defaultValue={currentSearch}
           placeholder="Check #, voucher #, purpose, requester..."
-          className="h-11 w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-blue-200 px-3 py-1.5 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
       <div>
@@ -193,7 +190,7 @@ function FilterBar({
           name="date"
           type="date"
           defaultValue={currentDate}
-          className="h-11 w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-40"
         />
       </div>
       <div>
@@ -207,7 +204,7 @@ function FilterBar({
           id="status"
           name="status"
           defaultValue={currentStatus}
-          className="h-11 w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-28"
         >
           <option value="">All</option>
           {STATUS_OPTIONS.map((s) => (
@@ -228,7 +225,7 @@ function FilterBar({
           id="account_type"
           name="account_type"
           defaultValue={currentAccountType}
-          className="h-11 w-full rounded-xl border border-blue-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="h-9 w-full rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-44"
         >
           <option value="">All</option>
           {ACCOUNT_OPTIONS.map((a) => (
@@ -268,19 +265,13 @@ export default async function ExpensesPage({
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10">
-      <div className="mb-6 rounded-3xl border border-blue-100 bg-white/85 p-5 shadow-sm shadow-blue-100/60 backdrop-blur sm:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mx-auto max-w-7xl px-4 py-4 sm:py-6">
+      <div className="mb-4 rounded-3xl border border-blue-100 bg-white/85 p-5 shadow-sm shadow-blue-100/60 backdrop-blur sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
-              Expense control
-            </p>
             <h1 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
               Expenses
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Review checks, vouchers, and recorded expense amounts.
-            </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <span className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
@@ -296,9 +287,6 @@ export default async function ExpensesPage({
             )}
           </div>
         </div>
-      </div>
-
-      <div className="mb-6">
         <FilterBar
           currentSearch={search}
           currentStatus={status}

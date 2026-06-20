@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getProjectById } from '@/lib/supabase/queries/projects'
 import { formatPHP } from '@/lib/utils/currency'
-import { formatDate } from '@/lib/utils/formatters'
+import { arabicTextClass, formatDate } from '@/lib/utils/formatters'
 import type { PaymentRelease, ProjectStatus } from '@/lib/types/database'
 
 export const revalidate = 3600
@@ -55,7 +55,7 @@ export default async function ProjectDetailPage({
             <h1 className="font-mono text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
               {project.project_number}
             </h1>
-            <p className="mt-3 max-w-3xl text-3xl font-black leading-tight tracking-tight text-slate-950 sm:text-4xl">
+            <p className={`mt-3 max-w-3xl text-3xl font-black leading-tight tracking-tight text-slate-950 sm:text-4xl ${arabicTextClass(project.address)}`}>
               {project.address || '—'}
             </p>
           </div>
@@ -148,7 +148,7 @@ function InfoField({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-blue-100 bg-slate-50/80 p-4">
       <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">{label}</p>
-      <p className="mt-1 break-words text-base font-semibold leading-6 text-slate-950">{value || '—'}</p>
+      <p className={`mt-1 break-words text-base font-semibold leading-6 text-slate-950 ${arabicTextClass(value)}`}>{value || '—'}</p>
     </div>
   )
 }
