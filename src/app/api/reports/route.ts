@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getDashboardStats, getChartData } from '@/lib/supabase/queries/dashboard'
+import { getDashboardStats } from '@/lib/supabase/queries/dashboard'
 import { getProjects } from '@/lib/supabase/queries/projects'
 import { getPayments } from '@/lib/supabase/queries/payments'
 import { getExpenses } from '@/lib/supabase/queries/expenses'
@@ -35,9 +35,8 @@ export async function GET(request: NextRequest) {
   }
 
   // Fetch data — use reasonable limits for PDF export
-  const [stats, chartData, payments, expenses] = await Promise.all([
+  const [stats, payments, expenses] = await Promise.all([
     getDashboardStats(),
-    getChartData(),
     getPayments({ pageSize: 500 }),
     getExpenses({ pageSize: 500 }),
   ])
@@ -58,11 +57,11 @@ export async function GET(request: NextRequest) {
       filename = 'expense-breakdown.pdf'
       break
     case 'project-overview':
-      pdfDoc = ProjectOverviewPdf({ projects: projects.data })
+      pdfDoc = ProjectOverviewPdf({ projects })
       filename = 'project-overview.pdf'
       break
     default:
-      pdfDoc = BudgetSummaryPdf({ projects: projects.data, stats })
+      pdfDoc = BudgetSummaryPdf({ projects, stats })
       filename = 'budget-summary.pdf'
   }
 
