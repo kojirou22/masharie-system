@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AppNav } from '@/components/app-nav'
+import { ThemeToggle } from '@/components/theme-toggle'
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,12 +20,21 @@ export const metadata: Metadata = {
   description: "Project, payment, expense, and dashboard charts for community development work.",
 };
 
-const navItems = [
-  { href: "/projects", label: "Projects" },
-  { href: "/payments", label: "Payments" },
-  { href: "/expenses", label: "Expenses" },
-  { href: "/dashboard", label: "Dashboard" },
-];
+const themeInitScript = `
+(() => {
+  try {
+    const storageKey = 'masharie-theme';
+    const storedTheme = window.localStorage.getItem(storageKey);
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = storedTheme === 'light' || storedTheme === 'dark' ? storedTheme : prefersDark ? 'dark' : 'light';
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  } catch {
+    document.documentElement.dataset.theme = 'light';
+    document.documentElement.style.colorScheme = 'light';
+  }
+})();
+`;
 
 export default function RootLayout({
   children,
@@ -34,7 +45,11 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-full text-slate-950">
         <Link
           href="#main-content"
@@ -42,9 +57,9 @@ export default function RootLayout({
         >
           Skip to content
         </Link>
-        <header className="sticky top-0 z-40 border-b border-blue-100/80 bg-white/85 backdrop-blur-xl">
+        <header className="sticky top-0 z-40 border-b border-blue-100/80 bg-white/85 shadow-sm shadow-blue-100/40 backdrop-blur-xl">
           <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-            <Link href="/" className="group flex items-center gap-3" aria-label="Masharie home">
+            <Link href="/" className="group flex w-fit items-center gap-3 rounded-2xl focus-visible:ring-2 focus-visible:ring-blue-500" aria-label="Masharie home">
               <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-600 text-sm font-black text-white shadow-sm shadow-blue-200 group-hover:bg-blue-700">
                 M
               </span>
@@ -53,17 +68,10 @@ export default function RootLayout({
                 <span className="block text-xs text-slate-500">Projects · Payments · Expenses</span>
               </span>
             </Link>
-            <nav className="flex gap-1 overflow-x-auto rounded-full border border-blue-100 bg-slate-50/80 p-1 text-sm" aria-label="Primary navigation">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="whitespace-nowrap rounded-full px-3 py-2 font-medium text-slate-600 hover:bg-white hover:text-blue-700 hover:shadow-sm focus-visible:bg-white focus-visible:text-blue-700"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+            <div className="flex min-w-0 items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+              <AppNav />
+              <ThemeToggle />
+            </div>
           </div>
         </header>
         <main id="main-content" className="min-h-[calc(100vh-73px)]">

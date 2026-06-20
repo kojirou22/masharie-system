@@ -59,9 +59,13 @@ export function ProjectsTable({
 
   return (
     <div className="space-y-4">
-      <div className="overflow-x-auto rounded-2xl border border-blue-100 bg-white shadow-sm shadow-blue-100/60">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-100 text-left">
+      <div className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-sm shadow-blue-100/60">
+        <div className="border-b border-blue-100 bg-blue-50/60 px-4 py-2 text-xs font-medium text-blue-700 sm:hidden">
+          Swipe horizontally to see budget and release totals.
+        </div>
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[920px] text-sm">
+          <thead className="sticky top-0 z-10 bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
             <tr>
               <th className="px-4 py-3 font-bold text-slate-950">Batch #</th>
               <th className="px-4 py-3 font-bold text-slate-950">Project #</th>
@@ -79,7 +83,7 @@ export function ProjectsTable({
                 role="link"
                 tabIndex={0}
                 aria-label={`Open project ${project.project_number}`}
-                className="cursor-pointer hover:bg-blue-50/60 transition-colors focus:outline-none focus-visible:bg-blue-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500"
+                className="cursor-pointer transition-colors hover:bg-blue-50/60 focus:outline-none focus-visible:bg-blue-50 focus-visible:[box-shadow:inset_3px_0_0_rgb(59_130_246)]"
                 onClick={() => openProject(project.id)}
                 onKeyDown={(event) => handleProjectKeyDown(event, project.id)}
               >
@@ -102,6 +106,7 @@ export function ProjectsTable({
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {total === 0 && (
