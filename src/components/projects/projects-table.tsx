@@ -15,6 +15,18 @@ export type ProjectWithTotals = Project & {
 const headerCellClass =
   'sticky top-0 z-20 bg-slate-100 px-4 py-3 font-bold text-slate-950 shadow-[inset_0_-1px_0_rgba(148,163,184,0.35)]'
 
+function SortIcon({ active, direction }: { active: boolean; direction: string }) {
+  if (!active) {
+    return <span className="ml-1 text-slate-400" aria-hidden="true">↕</span>
+  }
+
+  return (
+    <span className="ml-1 text-slate-900" aria-hidden="true">
+      {direction === 'asc' ? '↑' : '↓'}
+    </span>
+  )
+}
+
 function StatusBadge({ status }: { status: ProjectStatus }) {
   const styles: Record<ProjectStatus, string> = {
     Pending: 'bg-amber-100 text-amber-800',
@@ -40,6 +52,8 @@ export function ProjectsTable({
   currentType,
   currentBatchNumber,
   currentBatchYear,
+  currentSort,
+  currentDir,
 }: {
   projects: ProjectWithTotals[]
   total: number
@@ -49,6 +63,8 @@ export function ProjectsTable({
   currentType: string
   currentBatchNumber: string
   currentBatchYear: string
+  currentSort: string
+  currentDir: string
 }) {
   const [selectedProject, setSelectedProject] = useState<ProjectWithTotals | null>(null)
   const pageSize = 25
@@ -65,14 +81,38 @@ export function ProjectsTable({
     return () => document.removeEventListener('keydown', handleEscape)
   }, [selectedProject])
 
-  function pageHref(nextPage: number) {
+  function baseParams() {
     const params = new URLSearchParams()
     if (currentSearch) params.set('search', currentSearch)
     if (currentStatus) params.set('status', currentStatus)
     if (currentType) params.set('type', currentType)
     if (currentBatchNumber) params.set('batch_number', currentBatchNumber)
     if (currentBatchYear) params.set('batch_year', currentBatchYear)
+    return params
+  }
+
+  function pageHref(nextPage: number) {
+    const params = baseParams()
+    if (currentSort && currentDir) {
+      params.set('sort', currentSort)
+      params.set('dir', currentDir)
+    }
     if (nextPage > 1) params.set('page', String(nextPage))
+
+    const query = params.toString()
+    return query ? `/projects?${query}` : '/projects'
+  }
+
+  function sortHref(column: string) {
+    const params = baseParams()
+
+    if (currentSort !== column) {
+      params.set('sort', column)
+      params.set('dir', 'asc')
+    } else if (currentDir === 'asc') {
+      params.set('sort', column)
+      params.set('dir', 'desc')
+    }
 
     const query = params.toString()
     return query ? `/projects?${query}` : '/projects'
@@ -104,12 +144,42 @@ export function ProjectsTable({
           <table className="w-full min-w-[920px] text-sm">
             <thead className="bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
               <tr>
-                <th className={headerCellClass}>Batch #</th>
-                <th className={headerCellClass}>Project #</th>
-                <th className={headerCellClass}>Supervisor</th>
-                <th className={headerCellClass}>Address</th>
-                <th className={headerCellClass}>Type</th>
-                <th className={`${headerCellClass} text-right`}>Budget</th>
+                <th className={headerCellClass}>
+                  <Link href={sortHref('batch_number')} className="inline-flex items-center gap-1 hover:text-blue-700">
+                    Batch #
+                    <SortIcon active={currentSort === 'batch_number'} direction={currentDir} />
+                  </Link>
+                </th>
+                <th className={headerCellClass}>
+                  <Link href={sortHref('project_number')} className="inline-flex items-center gap-1 hover:text-blue-700">
+                    Project #
+                    <SortIcon active={currentSort === 'project_number'} direction={currentDir} />
+                  </Link>
+                </th>
+                <th className={headerCellClass}>
+                  <Link href={sortHref('supervisor')} className="inline-flex items-center gap-1 hover:text-blue-700">
+                    Supervisor
+                    <SortIcon active={currentSort === 'supervisor'} direction={currentDir} />
+                  </Link>
+                </th>
+                <th className={headerCellClass}>
+                  <Link href={sortHref('address')} className="inline-flex items-center gap-1 hover:text-blue-700">
+                    Address
+                    <SortIcon active={currentSort === 'address'} direction={currentDir} />
+                  </Link>
+                </th>
+                <th className={headerCellClass}>
+                  <Link href={sortHref('type')} className="inline-flex items-center gap-1 hover:text-blue-700">
+                    Type
+                    <SortIcon active={currentSort === 'type'} direction={currentDir} />
+                  </Link>
+                </th>
+                <th className={`${headerCellClass} text-right`}>
+                  <Link href={sortHref('budget')} className="inline-flex items-center justify-end gap-1 hover:text-blue-700">
+                    Budget
+                    <SortIcon active={currentSort === 'budget'} direction={currentDir} />
+                  </Link>
+                </th>
                 <th className={`${headerCellClass} text-right`}>Total Released</th>
               </tr>
             </thead>

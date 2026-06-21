@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { AutoFilterForm } from '@/components/auto-filter-form';
 import { ProjectsTable } from '@/components/projects/projects-table';
-import { getProjects } from '@/lib/supabase/queries/projects';
+import { getProjects, type ProjectSortColumn, type SortDirection } from '@/lib/supabase/queries/projects';
 import type { ProjectStatus, ProjectType } from '@/lib/types/database';
 
 export const revalidate = 3600;
@@ -25,24 +25,52 @@ const TYPE_OPTIONS: ProjectType[] = [
   'Markaz',
 ];
 
+const SORT_COLUMNS = [
+  'batch_number',
+  'project_number',
+  'supervisor',
+  'address',
+  'type',
+  'budget',
+  'updated_at',
+] as const satisfies readonly ProjectSortColumn[];
+
+function isProjectSortColumn(value: string): value is ProjectSortColumn {
+  return SORT_COLUMNS.includes(value as ProjectSortColumn);
+}
+
+function isSortDirection(value: string): value is SortDirection {
+  return value === 'asc' || value === 'desc';
+}
+
 function FilterBar({
   currentSearch,
   currentStatus,
   currentType,
   currentBatchNumber,
   currentBatchYear,
+  currentSort,
+  currentDir,
 }: {
   currentSearch: string;
   currentStatus: string;
   currentType: string;
   currentBatchNumber: string;
   currentBatchYear: string;
+  currentSort: string;
+  currentDir: string;
 }) {
   return (
     <AutoFilterForm
       action="/projects"
       className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(360px,1fr)_auto_auto_auto_auto] lg:items-end"
     >
+      {currentSort && currentDir && (
+        <>
+          <input type="hidden" name="sort" value={currentSort} />
+          <input type="hidden" name="dir" value={currentDir} />
+        </>
+      )}
       <div className="sm:col-span-2 lg:col-span-1">
         <label
           htmlFor="search"
@@ -151,6 +179,13 @@ export default async function ProjectsPage({
   const batch_year =
     typeof params.batch_year === 'string' ? params.batch_year : '';
   const page = typeof params.page === 'string' ? parseInt(params.page) || 1 : 1;
+  const rawSort = typeof params.sort === 'string' ? params.sort : '';
+  const rawDir = typeof params.dir === 'string' ? params.dir : '';
+  const sort = isProjectSortColumn(rawSort) ? rawSort : 'updated_at';
+  const dir = isSortDirection(rawDir) ? rawDir : 'desc';
+  const hasExplicitSort = Boolean(
+    rawSort && rawDir && isProjectSortColumn(rawSort) && isSortDirection(rawDir)
+  );
 
   const { data: projects, count: total } = await getProjects({
     search,
@@ -159,6 +194,8 @@ export default async function ProjectsPage({
     batch_number,
     batch_year: batch_year ? parseInt(batch_year) || undefined : undefined,
     page,
+    sort,
+    dir,
   });
 
   return (
@@ -180,6 +217,8 @@ export default async function ProjectsPage({
           currentType={type}
           currentBatchNumber={batch_number}
           currentBatchYear={batch_year}
+          currentSort={hasExplicitSort ? sort : ''}
+          currentDir={hasExplicitSort ? dir : ''}
         />
       </div>
 
@@ -199,6 +238,8 @@ export default async function ProjectsPage({
           currentType={type}
           currentBatchNumber={batch_number}
           currentBatchYear={batch_year}
+          currentSort={hasExplicitSort ? sort : ''}
+          currentDir={hasExplicitSort ? dir : ''}
         />
       </Suspense>
     </div>

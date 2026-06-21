@@ -14,20 +14,38 @@ export type PaymentWithProject = PaymentRelease & {
 const headerCellClass =
   'sticky top-0 z-20 bg-slate-100 px-4 py-3 font-bold text-slate-950 shadow-[inset_0_-1px_0_rgba(148,163,184,0.35)]'
 
+function SortIcon({ active, direction }: { active: boolean; direction: string }) {
+  if (!active) {
+    return <span className="ml-1 text-slate-400" aria-hidden="true">↕</span>
+  }
+
+  return (
+    <span className="ml-1 text-slate-900" aria-hidden="true">
+      {direction === 'asc' ? '↑' : '↓'}
+    </span>
+  )
+}
+
 export function PaymentsTable({
   payments,
   total,
   page,
   currentSearch,
   currentStatus,
-  currentDate,
+  currentDateFrom,
+  currentDateTo,
+  currentSort,
+  currentDir,
 }: {
   payments: PaymentWithProject[]
   total: number
   page: number
   currentSearch: string
   currentStatus: string
-  currentDate: string
+  currentDateFrom: string
+  currentDateTo: string
+  currentSort: string
+  currentDir: string
 }) {
   const router = useRouter()
   const pageSize = 25
@@ -46,12 +64,37 @@ export function PaymentsTable({
     }
   }
 
-  function pageHref(nextPage: number) {
+  function baseParams() {
     const params = new URLSearchParams()
     if (currentSearch) params.set('search', currentSearch)
     if (currentStatus) params.set('status', currentStatus)
-    if (currentDate) params.set('date', currentDate)
+    if (currentDateFrom) params.set('date_from', currentDateFrom)
+    if (currentDateTo) params.set('date_to', currentDateTo)
+    return params
+  }
+
+  function pageHref(nextPage: number) {
+    const params = baseParams()
+    if (currentSort && currentDir) {
+      params.set('sort', currentSort)
+      params.set('dir', currentDir)
+    }
     if (nextPage > 1) params.set('page', String(nextPage))
+
+    const query = params.toString()
+    return query ? `/payments?${query}` : '/payments'
+  }
+
+  function sortHref(column: string) {
+    const params = baseParams()
+
+    if (currentSort !== column) {
+      params.set('sort', column)
+      params.set('dir', 'asc')
+    } else if (currentDir === 'asc') {
+      params.set('sort', column)
+      params.set('dir', 'desc')
+    }
 
     const query = params.toString()
     return query ? `/payments?${query}` : '/payments'
@@ -67,13 +110,33 @@ export function PaymentsTable({
         <table className="w-full min-w-[920px] text-sm">
           <thead className="bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
             <tr>
-              <th className={headerCellClass}>Date</th>
-              <th className={headerCellClass}>Check #</th>
-              <th className={headerCellClass}>Voucher #</th>
+              <th className={headerCellClass}>
+                <Link href={sortHref('released_date')} className="inline-flex items-center gap-1 hover:text-blue-700">
+                  Date
+                  <SortIcon active={currentSort === 'released_date'} direction={currentDir} />
+                </Link>
+              </th>
+              <th className={headerCellClass}>
+                <Link href={sortHref('check_number')} className="inline-flex items-center gap-1 hover:text-blue-700">
+                  Check #
+                  <SortIcon active={currentSort === 'check_number'} direction={currentDir} />
+                </Link>
+              </th>
+              <th className={headerCellClass}>
+                <Link href={sortHref('voucher_number')} className="inline-flex items-center gap-1 hover:text-blue-700">
+                  Voucher #
+                  <SortIcon active={currentSort === 'voucher_number'} direction={currentDir} />
+                </Link>
+              </th>
               <th className={headerCellClass}>Project #</th>
               <th className={headerCellClass}>Supervisor</th>
               <th className={headerCellClass}>Address</th>
-              <th className={`${headerCellClass} text-right`}>Amount</th>
+              <th className={`${headerCellClass} text-right`}>
+                <Link href={sortHref('amount')} className="inline-flex items-center justify-end gap-1 hover:text-blue-700">
+                  Amount
+                  <SortIcon active={currentSort === 'amount'} direction={currentDir} />
+                </Link>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">

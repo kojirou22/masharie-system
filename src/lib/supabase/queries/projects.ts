@@ -11,7 +11,20 @@ export interface ProjectFilters {
   supervisor?: string
   page?: number
   pageSize?: number
+  sort?: ProjectSortColumn
+  dir?: SortDirection
 }
+
+export type ProjectSortColumn =
+  | 'batch_number'
+  | 'project_number'
+  | 'supervisor'
+  | 'address'
+  | 'type'
+  | 'budget'
+  | 'updated_at'
+
+export type SortDirection = 'asc' | 'desc'
 
 type ProjectWithReleaseRows = Project & {
   payment_releases?: PaymentRelease[] | null
@@ -19,7 +32,19 @@ type ProjectWithReleaseRows = Project & {
 
 export async function getProjects(filters: ProjectFilters = {}) {
   const supabase = await createClient()
-  const { search, status, type, batch_number, batch_year, donor, supervisor, page = 1, pageSize = 25 } = filters
+  const {
+    search,
+    status,
+    type,
+    batch_number,
+    batch_year,
+    donor,
+    supervisor,
+    page = 1,
+    pageSize = 25,
+    sort = 'updated_at',
+    dir = 'desc',
+  } = filters
 
   let query = supabase
     .from('projects')
@@ -44,7 +69,7 @@ export async function getProjects(filters: ProjectFilters = {}) {
   const to = from + pageSize - 1
 
   const { data, error, count } = await query
-    .order('updated_at', { ascending: false })
+    .order(sort, { ascending: dir === 'asc' })
     .range(from, to)
 
   if (error) throw error

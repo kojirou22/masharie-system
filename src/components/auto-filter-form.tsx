@@ -27,6 +27,10 @@ export function AutoFilterForm({
   }
 
   function handleAutoSubmit(target: EventTarget) {
+    if (target instanceof Element && target.closest('[data-no-auto-submit]')) {
+      return
+    }
+
     const isTypingInput = target instanceof HTMLInputElement && ['number', 'search', 'text'].includes(target.type)
     submitForm(isTypingInput ? 300 : 0)
   }
