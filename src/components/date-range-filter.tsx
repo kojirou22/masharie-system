@@ -149,7 +149,7 @@ export function DateRangeFilter({ from, to }: DateRangeFilterProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 z-[100] mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-blue-100 bg-white p-4 shadow-xl shadow-blue-100/70">
+        <div className="date-range-surface absolute right-0 z-[100] mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-blue-100 bg-white p-4 shadow-xl shadow-blue-100/70">
           <div className="grid gap-4 sm:grid-cols-[1fr_9rem]">
             <div className="space-y-3">
               <div>
@@ -167,7 +167,7 @@ export function DateRangeFilter({ from, to }: DateRangeFilterProps) {
                   data-no-auto-submit
                   aria-describedby={hasInvalidRange ? 'date-range-error' : undefined}
                   aria-invalid={hasInvalidRange}
-                  className={`h-10 w-full rounded-lg border bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 ${hasInvalidRange ? 'border-rose-300 focus:ring-rose-500' : 'border-blue-200 focus:ring-blue-500'}`}
+                  className={`date-range-input h-10 w-full rounded-lg border bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 ${hasInvalidRange ? 'border-rose-300 focus:ring-rose-500' : 'border-blue-200 focus:ring-blue-500'}`}
                   onChange={(event) => setDraftFrom(event.target.value)}
                 />
               </div>
@@ -186,7 +186,7 @@ export function DateRangeFilter({ from, to }: DateRangeFilterProps) {
                   data-no-auto-submit
                   aria-describedby={hasInvalidRange ? 'date-range-error' : undefined}
                   aria-invalid={hasInvalidRange}
-                  className={`h-10 w-full rounded-lg border bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 ${hasInvalidRange ? 'border-rose-300 focus:ring-rose-500' : 'border-blue-200 focus:ring-blue-500'}`}
+                  className={`date-range-input h-10 w-full rounded-lg border bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 ${hasInvalidRange ? 'border-rose-300 focus:ring-rose-500' : 'border-blue-200 focus:ring-blue-500'}`}
                   onChange={(event) => setDraftTo(event.target.value)}
                 />
               </div>
