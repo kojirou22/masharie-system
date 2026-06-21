@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { requireAdmin } from '@/lib/auth/admin'
+import { setFlash } from '@/lib/flash'
 import { loginSchema } from '@/lib/validations/auth'
 
 function safeRedirectPath(value: string | undefined) {
@@ -17,7 +18,6 @@ export default async function LoginPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const params = await searchParams
-  const error = typeof params.error === 'string' ? params.error : ''
   const redirectTo = safeRedirectPath(typeof params.redirect === 'string' ? params.redirect : undefined)
 
   async function login(formData: FormData) {
@@ -34,13 +34,15 @@ export default async function LoginPage({
     const parsed = loginSchema.safeParse(raw)
     if (!parsed.success) {
       const errors = parsed.error.issues.map((i) => i.message).join(', ')
-      redirect(`/login?error=${encodeURIComponent(errors)}&redirect=${encodeURIComponent(requestedRedirect)}`)
+      await setFlash('error', errors)
+      redirect(`/login?redirect=${encodeURIComponent(requestedRedirect)}`)
     }
 
     const { error } = await supabase.auth.signInWithPassword(parsed.data)
 
     if (error) {
-      redirect(`/login?error=${encodeURIComponent('Invalid credentials')}&redirect=${encodeURIComponent(requestedRedirect)}`)
+      await setFlash('error', 'Invalid credentials')
+      redirect(`/login?redirect=${encodeURIComponent(requestedRedirect)}`)
     }
 
     // Single source of truth for admin check — same logic as proxy.ts
@@ -48,27 +50,23 @@ export default async function LoginPage({
       await requireAdmin()
     } catch {
       await supabase.auth.signOut()
-      redirect(`/login?error=${encodeURIComponent('Access denied. Admin only.')}`)
+      await setFlash('error', 'Access denied. Admin only.')
+      redirect('/login')
     }
 
+    await setFlash('success', 'Signed in successfully.')
     redirect(requestedRedirect)
   }
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
       <div className="rounded-2xl border border-blue-100 bg-white p-8 shadow-sm shadow-blue-100/60 w-full max-w-sm">
-        <h1 className="text-xl font-bold text-slate-950 mb-2 text-center font-[family-name:var(--font-fira-code)]">
+        <h1 className="text-xl font-bold text-slate-950 mb-2 text-center font-mono">
           Admin Login
         </h1>
         <p className="text-sm text-gray-500 text-center mb-6">
           This area is for administrators only.
         </p>
-
-        {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700">
-            {decodeURIComponent(error)}
-          </div>
-        )}
 
         <form action={login} className="space-y-4">
           <input type="hidden" name="redirect" value={redirectTo} />

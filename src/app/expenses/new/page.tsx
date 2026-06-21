@@ -1,17 +1,13 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Breadcrumbs } from '@/components/breadcrumbs'
 import { expenseSchema } from '@/lib/validations/expense'
 import { requireAdmin } from '@/lib/auth/admin'
+import { setFlash } from '@/lib/flash'
 import type { PaymentStatus, AccountType } from '@/lib/types/database'
 
-export default async function NewExpensePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}) {
+export default async function NewExpensePage() {
   await requireAdmin()
-  const params = await searchParams
-  const error = typeof params.error === 'string' ? params.error : ''
 
   async function createExpense(formData: FormData) {
     'use server'
@@ -32,7 +28,8 @@ export default async function NewExpensePage({
     const parsed = expenseSchema.safeParse(raw)
     if (!parsed.success) {
       const errors = parsed.error.issues.map((i) => i.message).join(', ')
-      redirect(`/expenses/new?error=${encodeURIComponent(errors)}`)
+      await setFlash('error', errors)
+      redirect('/expenses/new')
     }
 
     const { error } = await supabase.from('expenses').insert({
@@ -42,25 +39,23 @@ export default async function NewExpensePage({
     })
 
     if (error) {
-      redirect(`/expenses/new?error=${encodeURIComponent(error.message)}`)
+      await setFlash('error', error.message)
+      redirect('/expenses/new')
     }
 
+    await setFlash('success', 'Expense created successfully.')
     redirect('/expenses')
   }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 sm:py-10">
+      <Breadcrumbs items={[{ label: 'Expenses', href: '/expenses' }, { label: 'New Expense' }]} />
       <Link href="/expenses" className="text-sm text-blue-700 hover:underline mb-4 inline-block">
         ← Back to expenses
       </Link>
-      <h1 className="text-2xl font-bold text-slate-950 mb-6 font-[family-name:var(--font-fira-code)]">
+      <h1 className="text-2xl font-bold text-slate-950 mb-6 font-mono">
         New Expense
       </h1>
-      {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {decodeURIComponent(error)}
-        </div>
-      )}
       <form action={createExpense} className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field name="date" label="Date" type="date" required />
@@ -119,7 +114,7 @@ function SelectField({ name, label, options, defaultValue, required = false }: {
         defaultValue={defaultValue}
         className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
       >
-        <option value="">Select...</option>
+        <option value="" disabled={required}>Select...</option>
         {options.map((opt) => (
           <option key={opt} value={opt}>{opt}</option>
         ))}

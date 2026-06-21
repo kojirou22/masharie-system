@@ -61,7 +61,7 @@ export function MobileBottomNav() {
             className={`pointer-events-auto flex min-w-0 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-semibold transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${
               isActive
                 ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
-                : 'text-slate-500 hover:bg-blue-50 hover:text-blue-700'
+                : 'text-slate-600 hover:bg-blue-50 hover:text-blue-700'
             }`}
           >
             <Icon className="h-5 w-5" aria-hidden="true" />

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Breadcrumbs } from '@/components/breadcrumbs'
 import { getProjectById } from '@/lib/supabase/queries/projects'
 import { formatPHP } from '@/lib/utils/currency'
 import { arabicTextClass, formatDate } from '@/lib/utils/formatters'
@@ -44,6 +45,7 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:py-10">
+      <Breadcrumbs items={[{ label: 'Projects', href: '/projects' }, { label: project.project_number }]} />
       <Link href="/projects" className="mb-4 inline-flex rounded-full text-sm font-medium text-blue-700 hover:underline focus-visible:ring-2 focus-visible:ring-blue-500">
         ← Back to projects
       </Link>

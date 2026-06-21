@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppNav, MobileBottomNav } from '@/components/app-nav'
+import { FlashMessage } from '@/components/flash-message'
 import { ThemeToggle } from '@/components/theme-toggle'
 import "./globals.css";
 
@@ -79,6 +80,7 @@ export default function RootLayout({
         <main id="main-content" className="min-h-[calc(100vh-73px)]">
           {children}
         </main>
+        <FlashMessage />
         <MobileBottomNav />
       </body>
     </html>

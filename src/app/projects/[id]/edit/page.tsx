@@ -1,21 +1,19 @@
 import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
+import { Breadcrumbs } from '@/components/breadcrumbs'
 import { getProjectById } from '@/lib/supabase/queries/projects'
 import { projectSchema } from '@/lib/validations/project'
 import { requireAdmin } from '@/lib/auth/admin'
+import { setFlash } from '@/lib/flash'
 import type { ProjectType, ProjectStatus } from '@/lib/types/database'
 
 export default async function EditProjectPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const { id } = await params
   await requireAdmin()
-  const query = await searchParams
-  const error = typeof query.error === 'string' ? query.error : ''
   const project = await getProjectById(id)
   if (!project) notFound()
 
@@ -43,7 +41,8 @@ export default async function EditProjectPage({
     const parsed = projectSchema.safeParse(raw)
     if (!parsed.success) {
       const errors = parsed.error.issues.map((i) => i.message).join(', ')
-      redirect(`/projects/${id}/edit?error=${encodeURIComponent(errors)}`)
+      await setFlash('error', errors)
+      redirect(`/projects/${id}/edit`)
       return
     }
 
@@ -55,10 +54,12 @@ export default async function EditProjectPage({
     }).eq('id', id)
 
     if (error) {
-      redirect(`/projects/${id}/edit?error=${encodeURIComponent(error.message)}`)
+      await setFlash('error', error.message)
+      redirect(`/projects/${id}/edit`)
       return
     }
 
+    await setFlash('success', 'Project updated successfully.')
     redirect(`/projects/${id}`)
   }
 
@@ -69,26 +70,24 @@ export default async function EditProjectPage({
     const { error } = await supabase.from('projects').delete().eq('id', id)
 
     if (error) {
-      redirect(`/projects/${id}/edit?error=${encodeURIComponent('Cannot delete: project has payment releases')}`)
+      await setFlash('error', 'Cannot delete: project has payment releases')
+      redirect(`/projects/${id}/edit`)
       return
     }
 
+    await setFlash('success', 'Project deleted successfully.')
     redirect('/projects')
   }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 sm:py-10">
+      <Breadcrumbs items={[{ label: 'Projects', href: '/projects' }, { label: project.project_number, href: `/projects/${id}` }, { label: 'Edit' }]} />
       <Link href={`/projects/${id}`} className="text-sm text-blue-700 hover:underline mb-4 inline-block">
         ← Back to project
       </Link>
-      <h1 className="text-2xl font-bold text-slate-950 mb-6 font-[family-name:var(--font-fira-code)]">
+      <h1 className="text-2xl font-bold text-slate-950 mb-6 font-mono">
         Edit Project
       </h1>
-      {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {decodeURIComponent(error)}
-        </div>
-      )}
       <form action={updateProject} className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field name="project_number" label="Project Number" defaultValue={project.project_number} required />
@@ -165,7 +164,7 @@ function SelectField({ name, label, options, defaultValue, required = false }: {
         defaultValue={defaultValue}
         className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
       >
-        <option value="">Select...</option>
+        <option value="" disabled={required}>Select...</option>
         {options.map((opt) => (
           <option key={opt} value={opt}>{opt}</option>
         ))}

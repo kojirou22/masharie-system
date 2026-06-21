@@ -1,17 +1,13 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Breadcrumbs } from '@/components/breadcrumbs'
 import { paymentSchema } from '@/lib/validations/payment'
 import { requireAdmin } from '@/lib/auth/admin'
+import { setFlash } from '@/lib/flash'
 import type { PaymentStatus } from '@/lib/types/database'
 
-export default async function NewPaymentPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}) {
+export default async function NewPaymentPage() {
   const { supabase } = await requireAdmin()
-  const params = await searchParams
-  const error = typeof params.error === 'string' ? params.error : ''
 
   const { data: projects } = await supabase
     .from('projects')
@@ -36,7 +32,8 @@ export default async function NewPaymentPage({
     const parsed = paymentSchema.safeParse(raw)
     if (!parsed.success) {
       const errors = parsed.error.issues.map((i) => i.message).join(', ')
-      redirect(`/payments/new?error=${encodeURIComponent(errors)}`)
+      await setFlash('error', errors)
+      redirect('/payments/new')
     }
 
     const { error } = await supabase.from('payment_releases').insert({
@@ -47,25 +44,23 @@ export default async function NewPaymentPage({
     })
 
     if (error) {
-      redirect(`/payments/new?error=${encodeURIComponent(error.message)}`)
+      await setFlash('error', error.message)
+      redirect('/payments/new')
     }
 
+    await setFlash('success', 'Payment created successfully.')
     redirect('/payments')
   }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 sm:py-10">
+      <Breadcrumbs items={[{ label: 'Payments', href: '/payments' }, { label: 'New Payment' }]} />
       <Link href="/payments" className="text-sm text-blue-700 hover:underline mb-4 inline-block">
         ← Back to payments
       </Link>
-      <h1 className="text-2xl font-bold text-slate-950 mb-6 font-[family-name:var(--font-fira-code)]">
+      <h1 className="text-2xl font-bold text-slate-950 mb-6 font-mono">
         New Payment Release
       </h1>
-      {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {decodeURIComponent(error)}
-        </div>
-      )}
       <form action={createPayment} className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60 space-y-4">
         <div>
           <label htmlFor="project_id" className="block text-sm font-medium text-blue-700 mb-1">
@@ -77,7 +72,7 @@ export default async function NewPaymentPage({
             required
             className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
-            <option value="">Select a project...</option>
+            <option value="" disabled>Select a project...</option>
             {projects?.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.project_number} — {p.name}
@@ -149,7 +144,7 @@ function SelectField({ name, label, options, defaultValue, required = false }: {
         defaultValue={defaultValue}
         className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
       >
-        <option value="">Select...</option>
+        <option value="" disabled={required}>Select...</option>
         {options.map((opt) => (
           <option key={opt} value={opt}>{opt}</option>
         ))}

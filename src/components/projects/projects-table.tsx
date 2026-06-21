@@ -3,6 +3,8 @@
 import type { KeyboardEvent, MouseEvent } from 'react'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { ChevronRight } from 'lucide-react'
+import { Pagination } from '@/components/pagination'
 import { formatPHP } from '@/lib/utils/currency'
 import { arabicTextClass, formatDate } from '@/lib/utils/formatters'
 import type { PaymentRelease, Project, ProjectStatus } from '@/lib/types/database'
@@ -137,8 +139,9 @@ export function ProjectsTable({
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-sm shadow-blue-100/60">
-        <div className="border-b border-blue-100 bg-blue-50/60 px-4 py-2 text-xs font-medium text-blue-700 sm:hidden">
-          Swipe horizontally to see budget and release totals.
+        <div className="border-b border-blue-100 bg-blue-50/60 px-4 py-2 text-xs font-medium text-blue-700">
+          <span className="sm:hidden">Swipe horizontally to see budget and release totals.</span>
+          <span className="hidden sm:inline">Click a row to view project details.</span>
         </div>
         <div className="max-h-[calc(100vh-10rem)] overflow-auto">
           <table className="w-full min-w-[920px] text-sm">
@@ -190,7 +193,7 @@ export function ProjectsTable({
                   role="link"
                   tabIndex={0}
                   aria-label={`Open project ${project.project_number} details`}
-                  className="cursor-pointer transition-colors hover:bg-blue-50/60 focus:outline-none focus-visible:bg-blue-50 focus-visible:[box-shadow:inset_3px_0_0_rgb(59_130_246)]"
+                  className="group cursor-pointer transition-colors hover:bg-blue-50/60 focus:outline-none focus-visible:bg-blue-50 focus-visible:[box-shadow:inset_3px_0_0_rgb(59_130_246)]"
                   onClick={() => openProject(project)}
                   onKeyDown={(event) => handleProjectKeyDown(event, project)}
                 >
@@ -205,8 +208,9 @@ export function ProjectsTable({
                   </td>
                   <td className="px-4 py-3 text-right font-medium">{formatPHP(project.budget)}</td>
                   <td className="px-4 py-3 text-right font-medium">
-                    <span className={project.total_released > 0 ? 'text-green-700' : 'text-gray-400'}>
+                    <span className={`inline-flex items-center justify-end gap-1 ${project.total_released > 0 ? 'text-green-700' : 'text-gray-400'}`}>
                       {formatPHP(project.total_released)}
+                      <ChevronRight className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-60 group-focus-visible:opacity-60" aria-hidden="true" />
                     </span>
                   </td>
                 </tr>
@@ -231,24 +235,7 @@ export function ProjectsTable({
           <p className="text-sm text-gray-600">
             Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
           </p>
-          <div className="flex gap-2">
-            {page > 1 && (
-              <Link
-                href={pageHref(page - 1)}
-                className="rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 shadow-sm transition-colors hover:bg-slate-50"
-              >
-                Previous
-              </Link>
-            )}
-            {page < totalPages && (
-              <Link
-                href={pageHref(page + 1)}
-                className="rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 shadow-sm transition-colors hover:bg-slate-50"
-              >
-                Next
-              </Link>
-            )}
-          </div>
+          <Pagination currentPage={page} totalPages={totalPages} buildHref={pageHref} />
         </div>
       )}
 

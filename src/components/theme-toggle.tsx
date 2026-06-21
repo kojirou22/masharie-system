@@ -1,7 +1,7 @@
 'use client'
 
 import { Moon, Sun } from 'lucide-react'
-import { useRef, useSyncExternalStore } from 'react'
+import { useSyncExternalStore } from 'react'
 
 type Theme = 'light' | 'dark'
 
@@ -42,7 +42,6 @@ function getServerSnapshot(): Theme {
 
 export function ThemeToggle() {
   const theme = useSyncExternalStore(subscribe, getPreferredTheme, getServerSnapshot)
-  const handledTouchRef = useRef(false)
 
   function toggleTheme() {
     const nextTheme = theme === 'dark' ? 'light' : 'dark'
@@ -57,19 +56,7 @@ export function ThemeToggle() {
     <button
       type="button"
       className="inline-flex h-10 w-10 touch-manipulation items-center justify-center gap-2 rounded-full border border-blue-100 bg-white px-2.5 text-sm font-semibold text-slate-700 shadow-sm shadow-blue-100/60 hover:border-blue-200 hover:bg-blue-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:w-auto sm:px-3"
-      onClick={() => {
-        if (handledTouchRef.current) {
-          handledTouchRef.current = false
-          return
-        }
-
-        toggleTheme()
-      }}
-      onTouchEnd={(event) => {
-        event.preventDefault()
-        handledTouchRef.current = true
-        toggleTheme()
-      }}
+      onClick={toggleTheme}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       aria-pressed={isDark}
       suppressHydrationWarning

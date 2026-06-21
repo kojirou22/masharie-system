@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { AutoFilterForm } from '@/components/auto-filter-form';
 import { DateRangeFilter } from '@/components/date-range-filter';
+import { Pagination } from '@/components/pagination';
 import { getAdminUser } from '@/lib/auth/admin';
 import { getExpenses, type ExpenseSortColumn, type SortDirection } from '@/lib/supabase/queries/expenses';
 import { formatPHP } from '@/lib/utils/currency';
@@ -229,24 +230,7 @@ function ExpensesTable({
             Showing {(page - 1) * pageSize + 1}–
             {Math.min(page * pageSize, total)} of {total}
           </p>
-          <div className="flex gap-2">
-            {page > 1 && (
-              <Link
-                href={pageHref(page - 1)}
-                className="rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-50"
-              >
-                Previous
-              </Link>
-            )}
-            {page < totalPages && (
-              <Link
-                href={pageHref(page + 1)}
-                className="rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-50"
-              >
-                Next
-              </Link>
-            )}
-          </div>
+          <Pagination currentPage={page} totalPages={totalPages} buildHref={pageHref} />
         </div>
       )}
     </div>

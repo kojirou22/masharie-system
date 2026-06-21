@@ -3,6 +3,8 @@
 import type { KeyboardEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { ChevronRight } from 'lucide-react'
+import { Pagination } from '@/components/pagination'
 import { formatPHP } from '@/lib/utils/currency'
 import { arabicTextClass, formatDate } from '@/lib/utils/formatters'
 import type { PaymentRelease } from '@/lib/types/database'
@@ -103,8 +105,9 @@ export function PaymentsTable({
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-sm shadow-blue-100/60">
-        <div className="border-b border-blue-100 bg-blue-50/60 px-4 py-2 text-xs font-medium text-blue-700 sm:hidden">
-          Swipe horizontally to see project details and amounts.
+        <div className="border-b border-blue-100 bg-blue-50/60 px-4 py-2 text-xs font-medium text-blue-700">
+          <span className="sm:hidden">Swipe horizontally to see project details and amounts.</span>
+          <span className="hidden sm:inline">Click a payment row to open its project.</span>
         </div>
         <div className="max-h-[calc(100vh-10rem)] overflow-auto">
         <table className="w-full min-w-[920px] text-sm">
@@ -149,7 +152,7 @@ export function PaymentsTable({
                   role={isClickable ? 'link' : undefined}
                   tabIndex={isClickable ? 0 : undefined}
                   aria-label={payment.project ? `Open project ${payment.project.project_number}` : undefined}
-                  className={`${isClickable ? 'cursor-pointer focus:outline-none focus-visible:bg-blue-50 focus-visible:[box-shadow:inset_3px_0_0_rgb(59_130_246)]' : ''} transition-colors hover:bg-blue-50/60`}
+                  className={`${isClickable ? 'group cursor-pointer focus:outline-none focus-visible:bg-blue-50 focus-visible:[box-shadow:inset_3px_0_0_rgb(59_130_246)]' : ''} transition-colors hover:bg-blue-50/60`}
                   onClick={() => openPaymentProject(payment)}
                   onKeyDown={(event) => handlePaymentKeyDown(event, payment)}
                 >
@@ -165,7 +168,14 @@ export function PaymentsTable({
                   </td>
                   <td className={`px-4 py-3 text-gray-600 ${arabicTextClass(payment.project?.supervisor)}`}>{payment.project?.supervisor ?? '—'}</td>
                   <td className={`px-4 py-3 text-gray-600 max-w-[220px] truncate ${arabicTextClass(payment.project?.address)}`}>{payment.project?.address ?? '—'}</td>
-                  <td className="px-4 py-3 text-right font-medium">{formatPHP(payment.amount)}</td>
+                  <td className="px-4 py-3 text-right font-medium">
+                    <span className="inline-flex items-center justify-end gap-1">
+                      {formatPHP(payment.amount)}
+                      {isClickable && (
+                        <ChevronRight className="h-4 w-4 opacity-0 transition-opacity group-hover:opacity-60 group-focus-visible:opacity-60" aria-hidden="true" />
+                      )}
+                    </span>
+                  </td>
                 </tr>
               )
             })}
@@ -186,14 +196,7 @@ export function PaymentsTable({
           <p className="text-sm text-gray-600">
             Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
           </p>
-          <div className="flex gap-2">
-            {page > 1 && (
-              <Link href={pageHref(page - 1)} className="rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-50">Previous</Link>
-            )}
-            {page < totalPages && (
-              <Link href={pageHref(page + 1)} className="rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-50">Next</Link>
-            )}
-          </div>
+          <Pagination currentPage={page} totalPages={totalPages} buildHref={pageHref} />
         </div>
       )}
     </div>

@@ -15,6 +15,14 @@
   --accent-foreground: #ffffff;
   --destructive: #dc2626;
   --ring: #2563eb;
+  --chart-1: #2563eb;
+  --chart-2: #22c55e;
+  --chart-3: #f59e0b;
+  --chart-4: #ef4444;
+  --chart-5: #3b82f6;
+  --chart-6: #14b8a6;
+  --chart-7: #f97316;
+  --chart-8: #6366f1;
 }
 
 [data-theme="dark"] {
@@ -32,6 +40,14 @@
   --accent-foreground: #052e2b;
   --destructive: #f87171;
   --ring: #60a5fa;
+  --chart-1: #60a5fa;
+  --chart-2: #4ade80;
+  --chart-3: #fbbf24;
+  --chart-4: #f87171;
+  --chart-5: #93c5fd;
+  --chart-6: #2dd4bf;
+  --chart-7: #fb923c;
+  --chart-8: #a5b4fc;
 }
 
 @theme inline {
@@ -146,6 +162,11 @@ textarea {
   background-color: rgb(6 78 59 / 0.28);
 }
 
+[data-theme="dark"] .bg-rose-50,
+[data-theme="dark"] .bg-red-50 {
+  background-color: rgb(127 29 29 / 0.28);
+}
+
 [data-theme="dark"] .border-blue-100,
 [data-theme="dark"] .border-blue-100\/80,
 [data-theme="dark"] .border-blue-200,
@@ -157,6 +178,15 @@ textarea {
 
 [data-theme="dark"] .border-emerald-200 {
   border-color: rgb(5 150 105 / 0.38);
+}
+
+[data-theme="dark"] .border-rose-100,
+[data-theme="dark"] .border-red-200 {
+  border-color: rgb(127 29 29 / 0.38);
+}
+
+[data-theme="dark"] .border-slate-300 {
+  border-color: rgb(71 85 105 / 0.8);
 }
 
 [data-theme="dark"] .divide-slate-100 > :not([hidden]),
@@ -187,6 +217,12 @@ textarea {
 [data-theme="dark"] .text-green-700,
 [data-theme="dark"] .text-emerald-700 {
   color: #6ee7b7;
+}
+
+[data-theme="dark"] .text-red-600,
+[data-theme="dark"] .text-red-700,
+[data-theme="dark"] .text-rose-700 {
+  color: #fca5a5;
 }
 
 [data-theme="dark"] .text-blue-200 {
