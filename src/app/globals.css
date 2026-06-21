@@ -201,9 +201,29 @@ textarea {
   --tw-shadow-color: rgb(2 6 23 / 0.45);
 }
 
+.date-range-trigger,
 .date-range-surface,
 .date-range-input {
   color-scheme: light;
+}
+
+[data-theme="dark"] .date-range-trigger {
+  background-color: #ffffff;
+  border-color: #93c5fd;
+  color: #0f172a;
+}
+
+[data-theme="dark"] .date-range-trigger:hover {
+  background-color: #eff6ff;
+}
+
+[data-theme="dark"] .date-range-trigger .text-slate-900,
+[data-theme="dark"] .date-range-trigger .text-slate-500 {
+  color: #0f172a;
+}
+
+[data-theme="dark"] .date-range-trigger .text-slate-400 {
+  color: #64748b;
 }
 
 [data-theme="dark"] .date-range-surface {

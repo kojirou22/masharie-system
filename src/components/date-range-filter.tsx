@@ -137,7 +137,7 @@ export function DateRangeFilter({ from, to }: DateRangeFilterProps) {
         id="period-filter"
         type="button"
         aria-expanded={isOpen}
-        className="flex h-9 w-full min-w-56 items-center justify-between gap-3 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-left text-sm shadow-sm transition-colors hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-64"
+        className="date-range-trigger flex h-9 w-full min-w-56 items-center justify-between gap-3 rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-left text-sm shadow-sm transition-colors hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-64"
         onClick={() => setIsOpen((open) => !open)}
       >
         <span className={from || to ? 'font-medium text-slate-900' : 'text-slate-500'}>
