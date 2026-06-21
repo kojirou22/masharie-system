@@ -237,62 +237,68 @@ textarea {
   --tw-shadow-color: rgb(2 6 23 / 0.45);
 }
 
-.date-range-trigger,
 .date-range-surface,
 .date-range-input {
   color-scheme: light;
 }
 
 [data-theme="dark"] .date-range-trigger {
-  background-color: #ffffff;
-  border-color: #93c5fd;
-  color: #0f172a;
+  color-scheme: dark;
+  background-color: rgb(15 23 42 / 0.92);
+  border-color: rgb(30 64 175 / 0.58);
+  color: #e2e8f0;
+  box-shadow: 0 1px 0 rgb(148 163 184 / 0.08), inset 0 1px 0 rgb(148 163 184 / 0.06);
 }
 
 [data-theme="dark"] .date-range-trigger:hover {
-  background-color: #eff6ff;
+  background-color: rgb(30 41 59 / 0.92);
+  border-color: rgb(59 130 246 / 0.68);
 }
 
 [data-theme="dark"] .date-range-trigger .text-slate-900,
 [data-theme="dark"] .date-range-trigger .text-slate-500 {
-  color: #0f172a;
+  color: #e2e8f0;
 }
 
 [data-theme="dark"] .date-range-trigger .text-slate-400 {
-  color: #64748b;
+  color: #93c5fd;
 }
 
 [data-theme="dark"] .date-range-surface {
-  background-color: #ffffff;
-  border-color: #dbeafe;
-  color: #0f172a;
+  color-scheme: dark;
+  background-color: #0f172a;
+  border-color: rgb(30 64 175 / 0.58);
+  color: #e2e8f0;
+  box-shadow: 0 24px 60px rgb(2 6 23 / 0.65);
 }
 
 [data-theme="dark"] .date-range-surface .bg-white {
-  background-color: #ffffff;
+  background-color: #111827;
 }
 
 [data-theme="dark"] .date-range-surface .hover\:bg-blue-50:hover {
-  background-color: #eff6ff;
+  background-color: rgb(30 64 175 / 0.35);
 }
 
 [data-theme="dark"] .date-range-surface .hover\:bg-slate-100:hover {
-  background-color: #f1f5f9;
+  background-color: rgb(30 41 59 / 0.95);
 }
 
 [data-theme="dark"] .date-range-input {
-  background-color: #ffffff;
-  color: #0f172a;
+  color-scheme: dark;
+  background-color: #111827;
+  color: #e2e8f0;
+  border-color: rgb(30 64 175 / 0.58);
 }
 
 [data-theme="dark"] .date-range-surface .text-slate-600,
 [data-theme="dark"] .date-range-surface .text-slate-500 {
-  color: #475569;
+  color: #cbd5e1;
 }
 
 [data-theme="dark"] .date-range-surface .text-blue-700,
 [data-theme="dark"] .date-range-surface .hover\:text-blue-700:hover {
-  color: #1d4ed8;
+  color: #93c5fd;
 }
 
 .project-drawer-backdrop {

@@ -32,13 +32,16 @@ function isSortDirection(value: string): value is SortDirection {
   return value === 'asc' || value === 'desc';
 }
 
-function getTodayInputDate() {
+function getDefaultDateRange() {
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0');
   const day = String(today.getDate()).padStart(2, '0');
 
-  return `${year}-${month}-${day}`;
+  return {
+    from: `${year}-${month}-01`,
+    to: `${year}-${month}-${day}`,
+  };
 }
 
 function FilterBar({
@@ -125,9 +128,9 @@ export default async function PaymentsPage({
   const rawDateFrom = typeof params.date_from === 'string' ? params.date_from : undefined;
   const rawDateTo = typeof params.date_to === 'string' ? params.date_to : undefined;
   const hasDateRangeParams = rawDateFrom !== undefined || rawDateTo !== undefined;
-  const defaultDate = getTodayInputDate();
-  const dateFrom = legacyDate || (hasDateRangeParams ? rawDateFrom ?? '' : defaultDate);
-  const dateTo = legacyDate || (hasDateRangeParams ? rawDateTo ?? '' : defaultDate);
+  const defaultDateRange = getDefaultDateRange();
+  const dateFrom = legacyDate || (hasDateRangeParams ? rawDateFrom ?? '' : defaultDateRange.from);
+  const dateTo = legacyDate || (hasDateRangeParams ? rawDateTo ?? '' : defaultDateRange.to);
   const page = typeof params.page === 'string' ? parseInt(params.page) || 1 : 1;
   const rawSort = typeof params.sort === 'string' ? params.sort : '';
   const rawDir = typeof params.dir === 'string' ? params.dir : '';
