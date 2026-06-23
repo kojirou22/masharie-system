@@ -10,7 +10,7 @@
 
 A role-based project management dashboard that manages community development projects (mosques, houses, schools, water tanks, wells, food aid). Tracks projects, donors, budgets, payment releases, and expenses. All amounts in Philippine Peso (₱).
 
-**Two access levels:** Public (no auth) for viewing projects, payments, and expenses. Admin (login required) for all CRUD operations, user management, and reports.
+**Two access levels:** Public (no auth) for viewing projects, payments, and expenses. Admin (login required) for dashboard access, mutations, and user management.
 
 This is a greenfield Next.js build. Nothing is carried over from the previous Vite SPA.
 
@@ -34,9 +34,8 @@ This is a greenfield Next.js build. Nothing is carried over from the previous Vi
 | Server data | Supabase SSR server client (cookie-based) |
 | Route protection | `proxy.ts` (replaces deprecated middleware.ts in Next.js 16) |
 | Charts | Recharts 3.8 |
-| PDF export | @react-pdf/renderer |
 | Date utilities | date-fns |
-| Testing | Vitest + React Testing Library |
+| Testing | Vitest |
 | Static checks | ESLint + TypeScript strict |
 | Hosting | Vercel |
 
@@ -54,15 +53,12 @@ This is a greenfield Next.js build. Nothing is carried over from the previous Vi
 
 ```json
 {
-  "dev": "node scripts/clean-next-cache.mjs && next dev",
+  "dev": "next dev",
   "build": "next build",
   "start": "next start",
-  "lint": "eslint .",
+  "lint": "eslint",
   "test": "vitest run",
-  "typecheck": "tsc --noEmit",
-  "db:types": "supabase gen types typescript --linked > src/lib/types/database.ts",
-  "db:push": "supabase db push",
-  "db:diff": "supabase db diff"
+  "typecheck": "tsc --noEmit"
 }
 ```
 
@@ -78,9 +74,6 @@ This is a greenfield Next.js build. Nothing is carried over from the previous Vi
 /dashboard                        — protected admin shell (everything below requires auth)
   /projects/new                  — create project
   /projects/[id]/edit            — edit project
-  /reports                       — charts + PDF download
-  /api/reports                   — PDF generation route
-
 Note: Detail pages (project/[id], payment detail, expense detail, user detail)
 are accessed via the list pages — no separate top-level routes needed.
 ```
@@ -96,7 +89,6 @@ are accessed via the list pages — no separate top-level routes needed.
 | Projects list | View only | Full CRUD + detail + phases |
 | Payments list | View only | Full CRUD + approve/cancel |
 | Expenses list | View only | Full CRUD |
-| Reports | — | View + PDF export |
 | Users | — | Manage roles |
 | Dashboard overview | — | Full access |
 
@@ -187,14 +179,6 @@ Implementation detail: dedicated filter helpers in `lib/projects/project-filters
 
 - Zod schema: date, check number, voucher number, amount, purpose, requested by, account type, status
 - Admin only
-
-### Reports
-
-- Date range picker + report type selector
-- Report types: Budget Summary, Payment History, Expense Breakdown, Project Status
-- Chart + table preview below selection
-- "Download PDF" button triggers API route
-- Charts dynamically imported if bundle size becomes noticeable
 
 ### Users List
 
@@ -373,7 +357,7 @@ Storage policies: private bucket, public read via signed URLs for public pages, 
 
 ### Admin Pages (Auth Required)
 
-`/dashboard`, `/projects/new`, `/projects/[id]/edit`, `/reports`, `/api/reports` — protected.
+`/dashboard`, `/projects/new`, `/projects/[id]/edit`, `/payments/new`, `/expenses/new` — protected.
 
 `proxy.ts` flow:
 
@@ -508,7 +492,6 @@ After mutations, revalidate affected surfaces:
 - Project detail
 - Payments list
 - Payment detail
-- Reports (if affected)
 - Old and new project pages when a payment changes project
 
 ### Performance Checklist
@@ -522,15 +505,9 @@ After mutations, revalidate affected surfaces:
 
 ## 11. Security
 
-### Service Role Key Isolation
+### Supabase Key Isolation
 
-`SUPABASE_SERVICE_ROLE_KEY` must **never** appear in client-side code. Only use it in:
-- Server Components (not `"use client"`)
-- Server Actions
-- `proxy.ts`
-- API routes
-
-Any file with `"use client"` must use the anon key only. This is the #1 Next.js security footgun.
+Client-side code must use only `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` / anon access. Keep privileged database changes behind server-side auth checks and database policies.
 
 ### Rate Limiting on Public Endpoints
 
@@ -656,11 +633,9 @@ Tables already exist with data (536 projects, 774 payments, 91 expenses, 2 users
 - Build user management (list, detail, role change)
 - Add tests
 
-### Phase 5 — Reports & Export
+### Phase 5 — Deprecated
 
-- Build summary metrics and charts
-- Add PDF export route with @react-pdf/renderer (4 templates)
-- Consider dynamic importing Recharts to reduce initial bundle
+Reports and PDF export were removed from scope.
 
 ### Phase 6 — Polish & Quality Pass
 
@@ -715,7 +690,6 @@ Style direction: financial dashboard — clean, data-dense, authoritative.
 # .env.local
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
-SUPABASE_SERVICE_ROLE_KEY=        # server-side only — never expose to client
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
@@ -724,8 +698,8 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ## 19. Packages
 
 ```bash
-npm install @react-pdf/renderer date-fns @supabase/ssr
-npm install -D vitest @testing-library/react eslint typescript
+npm install date-fns @supabase/ssr
+npm install -D vitest eslint typescript
 ```
 
 > `date-fns` ships its own types — no `@types/date-fns` needed.
@@ -737,78 +711,28 @@ npm install -D vitest @testing-library/react eslint typescript
 
 ```
 src/
-├── app/
-│   ├── globals.css
-│   ├── layout.tsx
-│   ├── page.tsx                        → redirect to /projects
-│   ├── login/page.tsx
-│   ├── projects/
-│   │   ├── page.tsx                    — public list
-│   │   ├── new/page.tsx                — admin only
-│   │   └── [id]/
-│   │       ├── page.tsx                — public detail
-│   │       └── edit/page.tsx           — admin only
-│   ├── payments/page.tsx               — public list
-│   ├── expenses/page.tsx               — public list
-│   ├── dashboard/page.tsx              — admin only
-│   ├── reports/page.tsx                — admin only
-│   └── api/reports/route.ts            — admin only
-├── proxy.ts                            — route protection (replaces middleware.ts)
-├── public/
-│   └── robots.txt                      — disallow all crawling
-├── components/
-│   ├── ui/
-│   │   ├── status-badge.tsx
-│   │   ├── data-table.tsx
-│   │   ├── currency-input.tsx
-│   │   ├── date-picker.tsx
-│   │   ├── empty-state.tsx
-│   │   ├── loading-skeleton.tsx
-│   │   └── confirm-dialog.tsx
-│   ├── layout/
-│   │   ├── app-sidebar.tsx
-│   │   └── header.tsx
-│   ├── dashboard/
-│   │   ├── stats-cards.tsx
-│   │   ├── charts.tsx
-│   │   └── recent-activity.tsx
-│   ├── projects/
-│   │   ├── project-form.tsx
-│   │   └── project-phases.tsx
-│   ├── payments/
-│   │   └── payment-form.tsx
-│   ├── expenses/
-│   │   └── expense-form.tsx
-│   └── reports/
-│       ├── report-charts.tsx
-│       └── pdf-document.tsx
-├── contexts/
-│   └── user-context.tsx
-├── lib/
-│   ├── supabase/
-│   │   ├── client.ts
-│   │   ├── server.ts
-│   │   ├── admin.ts
-│   │   └── queries/
-│   │       ├── projects.ts
-│   │       ├── payments.ts
-│   │       ├── expenses.ts
-│   │       ├── users.ts
-│   │       └── dashboard.ts
-│   ├── types/
-│   │   └── database.ts
-│   ├── pdf/
-│   │   ├── document.tsx
-│   │   ├── styles.ts
-│   │   └── templates/
-│   │       ├── budget-summary.tsx
-│   │       ├── payment-history.tsx
-│   │       ├── expense-breakdown.tsx
-│   │       └── project-overview.tsx
-│   └── utils/
-│       ├── currency.ts
-│       ├── formatters.ts
-│       └── cn.ts
+app/
+  dashboard/page.tsx
+  expenses/page.tsx
+  expenses/new/page.tsx
+  login/page.tsx
+  payments/page.tsx
+  payments/new/page.tsx
+  projects/page.tsx
+  projects/new/page.tsx
+  projects/[id]/page.tsx
+  projects/[id]/edit/page.tsx
+components/
+  dashboard/dashboard-charts.tsx
+  projects/projects-table.tsx
+  payments/payments-table.tsx
+lib/
+  supabase/client.ts
+  supabase/server.ts
+  supabase/queries/
+  types/database.ts
+  utils/
+proxy.ts
 ```
 
 ---

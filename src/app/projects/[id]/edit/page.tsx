@@ -67,10 +67,29 @@ export default async function EditProjectPage({
     'use server'
 
     const { supabase } = await requireAdmin()
+
+    const { data: payments, error: paymentsError } = await supabase
+      .from('payment_releases')
+      .select('id')
+      .eq('project_id', id)
+      .limit(1)
+
+    if (paymentsError) {
+      await setFlash('error', paymentsError.message)
+      redirect(`/projects/${id}/edit`)
+      return
+    }
+
+    if (payments && payments.length > 0) {
+      await setFlash('error', 'Cannot delete: project has payment releases')
+      redirect(`/projects/${id}/edit`)
+      return
+    }
+
     const { error } = await supabase.from('projects').delete().eq('id', id)
 
     if (error) {
-      await setFlash('error', 'Cannot delete: project has payment releases')
+      await setFlash('error', error.message)
       redirect(`/projects/${id}/edit`)
       return
     }

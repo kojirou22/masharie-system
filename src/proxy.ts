@@ -1,5 +1,5 @@
 import { assertAdmin } from '@/lib/auth/admin'
-import type { NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
 const ADMIN_ROUTES = [
   '/dashboard',
@@ -7,9 +7,6 @@ const ADMIN_ROUTES = [
   '/projects/:id/edit',
   '/payments/new',
   '/expenses/new',
-  '/reports',
-  '/api/reports',
-  '/api/projects',
 ]
 
 function isProtectedRoute(pathname: string) {
@@ -26,7 +23,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (!isProtectedRoute(pathname)) {
-    return (await import('next/server')).NextResponse.next()
+    return NextResponse.next()
   }
 
   const result = await assertAdmin(request)
@@ -34,5 +31,15 @@ export async function proxy(request: NextRequest) {
     return result.response
   }
 
-  return (await import('next/server')).NextResponse.next()
+  return result.response
+}
+
+export const config = {
+  matcher: [
+    '/dashboard/:path*',
+    '/projects/new',
+    '/projects/:id/edit',
+    '/payments/new',
+    '/expenses/new',
+  ],
 }

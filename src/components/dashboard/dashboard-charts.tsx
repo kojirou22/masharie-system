@@ -40,7 +40,7 @@ interface ChartData {
   budgetByType: { name: string; value: number }[]
 }
 
-export function ReportCharts({ chartData }: { chartData: ChartData }) {
+export function DashboardCharts({ chartData }: { chartData: ChartData }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60">
@@ -127,3 +127,4 @@ function EmptyChart({ label }: { label: string }) {
     </div>
   )
 }
+

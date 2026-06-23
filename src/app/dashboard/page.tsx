@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { Activity, Banknote, Landmark, Wallet } from 'lucide-react'
-import { ReportCharts } from '@/components/reports/report-charts'
+import { DashboardCharts } from '@/components/dashboard/dashboard-charts'
 import { getDashboardStats, getChartData } from '@/lib/supabase/queries/dashboard'
 import { formatPHP } from '@/lib/utils/currency'
 
@@ -47,7 +47,7 @@ export default async function DashboardPage() {
       </div>
 
       <Suspense fallback={<div className="animate-pulse py-16 text-center text-blue-400">Loading charts...</div>}>
-        <ReportCharts chartData={chartData} />
+        <DashboardCharts chartData={chartData} />
       </Suspense>
     </div>
   )

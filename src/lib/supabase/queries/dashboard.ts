@@ -8,7 +8,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     supabase.from('projects').select('*', { count: 'exact', head: true }),
     supabase.from('projects').select('*', { count: 'exact', head: true }).eq('status', 'On Going'),
     supabase.from('projects').select('budget'),
-    supabase.from('payment_releases').select('amount'),
+    supabase.from('payment_releases').select('amount').eq('status', 'Released'),
   ])
 
   const total_budget = (budgetResult.data ?? []).reduce((sum, p) => sum + (p.budget ?? 0), 0)
