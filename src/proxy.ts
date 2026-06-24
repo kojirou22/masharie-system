@@ -6,6 +6,7 @@ const ADMIN_ROUTES = [
   '/projects/new',
   '/projects/:id/edit',
   '/payments/new',
+  '/payments/:id/edit',
   '/expenses/new',
 ]
 
@@ -13,6 +14,10 @@ function isProtectedRoute(pathname: string) {
   return ADMIN_ROUTES.some((route) => {
     if (route === '/projects/:id/edit') {
       return /^\/projects\/[^/]+\/edit$/.test(pathname)
+    }
+
+    if (route === '/payments/:id/edit') {
+      return /^\/payments\/[^/]+\/edit$/.test(pathname)
     }
 
     return pathname === route || pathname.startsWith(route + '/')
@@ -40,6 +45,7 @@ export const config = {
     '/projects/new',
     '/projects/:id/edit',
     '/payments/new',
+    '/payments/:id/edit',
     '/expenses/new',
   ],
 }

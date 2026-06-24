@@ -38,6 +38,7 @@ export function PaymentsTable({
   currentDateTo,
   currentSort,
   currentDir,
+  isAdmin,
 }: {
   payments: PaymentWithProject[]
   total: number
@@ -48,21 +49,27 @@ export function PaymentsTable({
   currentDateTo: string
   currentSort: string
   currentDir: string
+  isAdmin: boolean
 }) {
   const router = useRouter()
   const pageSize = 25
   const totalPages = Math.ceil(total / pageSize)
 
-  function openPaymentProject(payment: PaymentWithProject) {
+  function openPayment(payment: PaymentWithProject) {
+    if (isAdmin) {
+      router.push(`/payments/${payment.id}/edit`)
+      return
+    }
+
     if (payment.project_id) {
       router.push(`/projects/${payment.project_id}`)
     }
   }
 
   function handlePaymentKeyDown(event: KeyboardEvent<HTMLTableRowElement>, payment: PaymentWithProject) {
-    if ((event.key === 'Enter' || event.key === ' ') && payment.project_id) {
+    if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
-      openPaymentProject(payment)
+      openPayment(payment)
     }
   }
 
@@ -107,7 +114,7 @@ export function PaymentsTable({
       <div className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-sm shadow-blue-100/60">
         <div className="border-b border-blue-100 bg-blue-50/60 px-4 py-2 text-xs font-medium text-blue-700">
           <span className="sm:hidden">Swipe horizontally to see project details and amounts.</span>
-          <span className="hidden sm:inline">Click a payment row to open its project.</span>
+          <span className="hidden sm:inline">Click a payment row to {isAdmin ? 'edit it' : 'open its project'}.</span>
         </div>
         <div className="max-h-[calc(100vh-10rem)] overflow-auto">
         <table className="w-full min-w-[920px] text-sm">
@@ -144,16 +151,16 @@ export function PaymentsTable({
           </thead>
           <tbody className="divide-y divide-slate-100">
             {payments.map((payment) => {
-              const isClickable = Boolean(payment.project_id)
+              const isClickable = isAdmin || Boolean(payment.project_id)
 
               return (
                 <tr
                   key={payment.id}
                   role={isClickable ? 'link' : undefined}
                   tabIndex={isClickable ? 0 : undefined}
-                  aria-label={payment.project ? `Open project ${payment.project.project_number}` : undefined}
+                  aria-label={isClickable ? (isAdmin ? 'Edit payment' : `Open project ${payment.project?.project_number ?? ''}`) : undefined}
                   className={`${isClickable ? 'group cursor-pointer focus:outline-none focus-visible:bg-blue-50 focus-visible:[box-shadow:inset_3px_0_0_rgb(59_130_246)]' : ''} transition-colors hover:bg-blue-50/60`}
-                  onClick={() => openPaymentProject(payment)}
+                  onClick={() => openPayment(payment)}
                   onKeyDown={(event) => handlePaymentKeyDown(event, payment)}
                 >
                   <td className="px-4 py-3 text-gray-500 text-xs">{formatDate(payment.released_date ?? payment.released_at ?? payment.created_at)}</td>

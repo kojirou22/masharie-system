@@ -206,6 +206,7 @@ export default async function PaymentsPage({
           currentDateTo={dateTo}
           currentSort={hasExplicitSort ? sort : ''}
           currentDir={hasExplicitSort ? dir : ''}
+          isAdmin={isAdmin}
         />
       </Suspense>
     </div>
