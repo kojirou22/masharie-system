@@ -2,11 +2,11 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { AutoFilterForm } from '@/components/auto-filter-form';
 import { DateRangeFilter } from '@/components/date-range-filter';
+import { ExpenseRow } from '@/components/expenses/expense-row';
 import { Pagination } from '@/components/pagination';
 import { getAdminUser } from '@/lib/auth/admin';
 import { getExpenses, type ExpenseSortColumn, type SortDirection } from '@/lib/supabase/queries/expenses';
 import { formatPHP } from '@/lib/utils/currency';
-import { arabicTextClass, formatDate } from '@/lib/utils/formatters';
 import type { Expense, PaymentStatus, AccountType } from '@/lib/types/database';
 
 export const revalidate = 3600;
@@ -75,6 +75,7 @@ function ExpensesTable({
   currentDateTo,
   currentSort,
   currentDir,
+  isAdmin,
 }: {
   expenses: Expense[];
   total: number;
@@ -86,6 +87,7 @@ function ExpensesTable({
   currentDateTo: string;
   currentSort: string;
   currentDir: string;
+  isAdmin: boolean;
 }) {
   const pageSize = 25;
   const totalPages = Math.ceil(total / pageSize);
@@ -130,8 +132,9 @@ function ExpensesTable({
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-sm shadow-blue-100/60">
-        <div className="border-b border-blue-100 bg-blue-50/60 px-4 py-2 text-xs font-medium text-blue-700 sm:hidden">
-          Swipe horizontally to see requester, amount, and account.
+        <div className="border-b border-blue-100 bg-blue-50/60 px-4 py-2 text-xs font-medium text-blue-700">
+          <span className="sm:hidden">Swipe horizontally to see requester, amount, and account.</span>
+          <span className="hidden sm:inline">{isAdmin ? 'Click an expense row to edit it.' : 'Expense rows are read-only.'}</span>
         </div>
         <div className="max-h-[calc(100vh-10rem)] overflow-auto">
           <table className="w-full min-w-[900px] text-sm">
@@ -183,32 +186,7 @@ function ExpensesTable({
             </thead>
             <tbody className="divide-y divide-slate-100">
               {expenses.map((expense) => (
-                <tr
-                  key={expense.id}
-                  className="hover:bg-blue-50/60 transition-colors"
-                >
-                  <td className="px-4 py-3 text-gray-600">
-                    {formatDate(expense.date)}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-600">
-                    {expense.check_number}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-600">
-                    {expense.voucher_number}
-                  </td>
-                  <td className={`px-4 py-3 text-gray-600 ${arabicTextClass(expense.purpose)}`}>{expense.purpose}</td>
-                  <td className={`px-4 py-3 text-gray-600 ${arabicTextClass(expense.requested_by)}`}>
-                    {expense.requested_by}
-                  </td>
-                  <td className="px-4 py-3 text-right font-medium">
-                    {formatPHP(expense.amount)}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">
-                      {expense.account_type}
-                    </span>
-                  </td>
-                </tr>
+                <ExpenseRow key={expense.id} expense={expense} isAdmin={isAdmin} />
               ))}
             </tbody>
           </table>
@@ -430,6 +408,7 @@ export default async function ExpensesPage({
           currentDateTo={dateTo}
           currentSort={hasExplicitSort ? sort : ''}
           currentDir={hasExplicitSort ? dir : ''}
+          isAdmin={isAdmin}
         />
       </Suspense>
     </div>

@@ -23,7 +23,7 @@ Route protection uses `src/proxy.ts` (Next.js 16 pattern), **not** `middleware.t
 Protected routes are defined in `ADMIN_ROUTES` inside `proxy.ts`:
 - `/dashboard`
 - `/projects/new`, `/projects/:id/edit`
-- `/payments/new`, `/payments/:id/edit`, `/expenses/new`
+- `/payments/new`, `/payments/:id/edit`, `/expenses/new`, `/expenses/:id/edit`
 
 All other routes are public (no auth).
 

@@ -1,37 +1,37 @@
-import Link from 'next/link'
-import { redirect } from 'next/navigation'
-import { Breadcrumbs } from '@/components/breadcrumbs'
-import { paymentBatchSchema } from '@/lib/validations/payment'
-import { requireAdmin } from '@/lib/auth/admin'
-import { setFlash } from '@/lib/flash'
-import { MultipleProjectPaymentItems } from '@/components/payments/multiple-project-payment-items'
-import type { PaymentStatus } from '@/lib/types/database'
+import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import { paymentBatchSchema } from '@/lib/validations/payment';
+import { requireAdmin } from '@/lib/auth/admin';
+import { setFlash } from '@/lib/flash';
+import { MultipleProjectPaymentItems } from '@/components/payments/multiple-project-payment-items';
+import type { PaymentStatus } from '@/lib/types/database';
 
 function getTodayDateInputValue() {
-  const today = new Date()
-  const year = today.getFullYear()
-  const month = String(today.getMonth() + 1).padStart(2, '0')
-  const day = String(today.getDate()).padStart(2, '0')
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
 
-  return `${year}-${month}-${day}`
+  return `${year}-${month}-${day}`;
 }
 
 export default async function NewPaymentPage() {
-  const { supabase } = await requireAdmin()
+  const { supabase } = await requireAdmin();
 
   const { data: projects } = await supabase
     .from('projects')
     .select('id, project_number, name, supervisor, address')
-    .order('project_number')
-  const today = getTodayDateInputValue()
+    .order('project_number');
+  const today = getTodayDateInputValue();
 
   async function createPayment(formData: FormData) {
-    'use server'
+    'use server';
 
-    const { supabase, user } = await requireAdmin()
+    const { supabase, user } = await requireAdmin();
 
-    const projectIds = formData.getAll('project_id').map(String)
-    const amounts = formData.getAll('amount').map(String)
+    const projectIds = formData.getAll('project_id').map(String);
+    const amounts = formData.getAll('amount').map(String);
 
     const raw = {
       check_number: formData.get('check_number') || null,
@@ -43,13 +43,13 @@ export default async function NewPaymentPage() {
         project_id: projectId,
         amount: amounts[index],
       })),
-    }
+    };
 
-    const parsed = paymentBatchSchema.safeParse(raw)
+    const parsed = paymentBatchSchema.safeParse(raw);
     if (!parsed.success) {
-      const errors = parsed.error.issues.map((i) => i.message).join(', ')
-      await setFlash('error', errors)
-      redirect('/payments/new')
+      const errors = parsed.error.issues.map((i) => i.message).join(', ');
+      await setFlash('error', errors);
+      redirect('/payments/new');
     }
 
     const rows = parsed.data.line_items.map((item) => ({
@@ -62,38 +62,70 @@ export default async function NewPaymentPage() {
       released_date: parsed.data.released_date,
       released_at: parsed.data.released_date || null,
       released_by: user.id,
-    }))
+    }));
 
-    const { error } = await supabase.from('payment_releases').insert(rows)
+    const { error } = await supabase.from('payment_releases').insert(rows);
 
     if (error) {
-      await setFlash('error', error.message)
-      redirect('/payments/new')
+      await setFlash('error', error.message);
+      redirect('/payments/new');
     }
 
-    await setFlash('success', `${rows.length} payment allocation${rows.length === 1 ? '' : 's'} created successfully.`)
-    redirect('/payments')
+    await setFlash(
+      'success',
+      `${rows.length} payment allocation${rows.length === 1 ? '' : 's'} created successfully.`,
+    );
+    redirect('/payments');
   }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 sm:py-10">
-      <Breadcrumbs items={[{ label: 'Payments', href: '/payments' }, { label: 'New Payment' }]} />
-      <Link href="/payments" className="text-sm text-blue-700 hover:underline mb-4 inline-block">
+      <Breadcrumbs
+        items={[
+          { label: 'Payments', href: '/payments' },
+          { label: 'New Payment' },
+        ]}
+      />
+      <Link
+        href="/payments"
+        className="text-sm text-blue-700 hover:underline mb-4 inline-block"
+      >
         ← Back to payments
       </Link>
       <h1 className="text-2xl font-bold text-slate-950 mb-6 font-mono">
         New Payment Release
       </h1>
-      <form action={createPayment} className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60 space-y-4">
+      <form
+        action={createPayment}
+        className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60 space-y-4"
+      >
         <input type="hidden" name="status" value="Released" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field name="check_number" label="Check Number" placeholder="e.g. 123456" />
-          <Field name="voucher_number" label="Voucher Number" placeholder="e.g. V-2026-001" />
-          <Field name="released_date" label="Release Date" type="date" defaultValue={today} />
+          <Field
+            name="check_number"
+            label="Check Number"
+            placeholder="e.g. 123456"
+          />
+          <Field
+            name="voucher_number"
+            label="Voucher Number"
+            placeholder="e.g. 123456"
+          />
+          <Field
+            name="released_date"
+            label="Release Date"
+            type="date"
+            defaultValue={today}
+          />
         </div>
         <MultipleProjectPaymentItems projects={projects ?? []} />
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium text-blue-700 mb-1">Notes</label>
+          <label
+            htmlFor="notes"
+            className="block text-sm font-medium text-blue-700 mb-1"
+          >
+            Notes
+          </label>
           <textarea
             id="notes"
             name="notes"
@@ -110,15 +142,30 @@ export default async function NewPaymentPage() {
         </button>
       </form>
     </div>
-  )
+  );
 }
 
-function Field({ name, label, placeholder, defaultValue, type = 'text', required = false }: {
-  name: string; label: string; placeholder?: string; defaultValue?: string; type?: string; required?: boolean
+function Field({
+  name,
+  label,
+  placeholder,
+  defaultValue,
+  type = 'text',
+  required = false,
+}: {
+  name: string;
+  label: string;
+  placeholder?: string;
+  defaultValue?: string;
+  type?: string;
+  required?: boolean;
 }) {
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-blue-700 mb-1">
+      <label
+        htmlFor={name}
+        className="block text-sm font-medium text-blue-700 mb-1"
+      >
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <input
@@ -131,5 +178,5 @@ function Field({ name, label, placeholder, defaultValue, type = 'text', required
         className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
     </div>
-  )
+  );
 }

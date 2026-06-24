@@ -8,6 +8,7 @@ const ADMIN_ROUTES = [
   '/payments/new',
   '/payments/:id/edit',
   '/expenses/new',
+  '/expenses/:id/edit',
 ]
 
 function isProtectedRoute(pathname: string) {
@@ -18,6 +19,10 @@ function isProtectedRoute(pathname: string) {
 
     if (route === '/payments/:id/edit') {
       return /^\/payments\/[^/]+\/edit$/.test(pathname)
+    }
+
+    if (route === '/expenses/:id/edit') {
+      return /^\/expenses\/[^/]+\/edit$/.test(pathname)
     }
 
     return pathname === route || pathname.startsWith(route + '/')
@@ -47,5 +52,6 @@ export const config = {
     '/payments/new',
     '/payments/:id/edit',
     '/expenses/new',
+    '/expenses/:id/edit',
   ],
 }

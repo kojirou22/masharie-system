@@ -43,6 +43,10 @@ function isSortDirection(value: string): value is SortDirection {
   return value === 'asc' || value === 'desc';
 }
 
+function getCurrentYear() {
+  return String(new Date().getFullYear());
+}
+
 function FilterBar({
   currentSearch,
   currentStatus,
@@ -176,8 +180,8 @@ export default async function ProjectsPage({
   const type = typeof params.type === 'string' ? params.type : '';
   const batch_number =
     typeof params.batch_number === 'string' ? params.batch_number : '';
-  const batch_year =
-    typeof params.batch_year === 'string' ? params.batch_year : '';
+  const rawBatchYear = typeof params.batch_year === 'string' ? params.batch_year : undefined;
+  const batch_year = rawBatchYear ?? getCurrentYear();
   const page = typeof params.page === 'string' ? parseInt(params.page) || 1 : 1;
   const rawSort = typeof params.sort === 'string' ? params.sort : '';
   const rawDir = typeof params.dir === 'string' ? params.dir : '';
