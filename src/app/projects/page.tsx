@@ -1,6 +1,17 @@
 import { Suspense } from 'react';
 import { AutoFilterForm } from '@/components/auto-filter-form';
+import Link from 'next/link';
+import {
+  RegistryHeader,
+  RegistryPageShell,
+  RegistryStatBadge,
+  registryFilterGridClass,
+  registryInputClass,
+  registryLabelClass,
+  registrySelectClass,
+} from '@/components/registry';
 import { ProjectsTable } from '@/components/projects/projects-table';
+import { getAdminUser } from '@/lib/auth/admin';
 import { getProjects, type ProjectSortColumn, type SortDirection } from '@/lib/supabase/queries/projects';
 import type { ProjectStatus, ProjectType } from '@/lib/types/database';
 
@@ -67,7 +78,7 @@ function FilterBar({
   return (
     <AutoFilterForm
       action="/projects"
-      className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(360px,1fr)_auto_auto_auto_auto] lg:items-end"
+      className={registryFilterGridClass}
     >
       {currentSort && currentDir && (
         <>
@@ -78,7 +89,7 @@ function FilterBar({
       <div className="sm:col-span-2 lg:col-span-1">
         <label
           htmlFor="search"
-          className="block text-xs font-medium text-blue-700 mb-1"
+          className={registryLabelClass}
         >
           Search
         </label>
@@ -88,13 +99,13 @@ function FilterBar({
           type="text"
           defaultValue={currentSearch}
           placeholder="Project #, name, donor, supervisor, address..."
-          className="h-9 w-full rounded-lg border border-blue-200 px-3 py-1.5 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={registryInputClass}
         />
       </div>
       <div>
         <label
           htmlFor="status"
-          className="block text-xs font-medium text-blue-700 mb-1"
+          className={registryLabelClass}
         >
           Status
         </label>
@@ -102,7 +113,7 @@ function FilterBar({
           id="status"
           name="status"
           defaultValue={currentStatus}
-          className="h-9 w-full rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-28"
+          className={`${registrySelectClass} lg:w-28`}
         >
           <option value="">All</option>
           {STATUS_OPTIONS.map((s) => (
@@ -115,7 +126,7 @@ function FilterBar({
       <div>
         <label
           htmlFor="type"
-          className="block text-xs font-medium text-blue-700 mb-1"
+          className={registryLabelClass}
         >
           Type
         </label>
@@ -123,7 +134,7 @@ function FilterBar({
           id="type"
           name="type"
           defaultValue={currentType}
-          className="h-9 w-full rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-28"
+          className={`${registrySelectClass} lg:w-28`}
         >
           <option value="">All</option>
           {TYPE_OPTIONS.map((t) => (
@@ -136,7 +147,7 @@ function FilterBar({
       <div>
         <label
           htmlFor="batch_number"
-          className="block text-xs font-medium text-blue-700 mb-1"
+          className={registryLabelClass}
         >
           Batch #
         </label>
@@ -146,13 +157,13 @@ function FilterBar({
           type="text"
           defaultValue={currentBatchNumber}
           placeholder="1"
-          className="h-9 w-full rounded-lg border border-blue-200 px-3 py-1.5 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-24"
+          className={`${registryInputClass} lg:w-24`}
         />
       </div>
       <div>
         <label
           htmlFor="batch_year"
-          className="block text-xs font-medium text-blue-700 mb-1"
+          className={registryLabelClass}
         >
           Year
         </label>
@@ -162,7 +173,7 @@ function FilterBar({
           type="number"
           defaultValue={currentBatchYear}
           placeholder="2026"
-          className="h-9 w-full rounded-lg border border-blue-200 px-3 py-1.5 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-28"
+          className={`${registryInputClass} lg:w-28`}
         />
       </div>
     </AutoFilterForm>
@@ -191,30 +202,36 @@ export default async function ProjectsPage({
     rawSort && rawDir && isProjectSortColumn(rawSort) && isSortDirection(rawDir)
   );
 
-  const { data: projects, count: total } = await getProjects({
-    search,
-    status: status as ProjectStatus | undefined,
-    type: type as ProjectType | undefined,
-    batch_number,
-    batch_year: batch_year ? parseInt(batch_year) || undefined : undefined,
-    page,
-    sort,
-    dir,
-  });
+  const [{ data: projects, count: total }, { isAdmin }] = await Promise.all([
+    getProjects({
+      search,
+      status: status as ProjectStatus | undefined,
+      type: type as ProjectType | undefined,
+      batch_number,
+      batch_year: batch_year ? parseInt(batch_year) || undefined : undefined,
+      page,
+      sort,
+      dir,
+    }),
+    getAdminUser(),
+  ]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-4 sm:py-6">
-      <div className="mb-4 rounded-3xl border border-blue-100 bg-white/85 p-5 shadow-sm shadow-blue-100/60 backdrop-blur sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-              Projects
-            </h1>
-          </div>
-          <span className="inline-flex w-fit items-center rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
-            {total} total projects
-          </span>
-        </div>
+    <RegistryPageShell>
+      <RegistryHeader
+        title="Projects"
+        stats={<RegistryStatBadge>{total} total projects</RegistryStatBadge>}
+        actions={
+          isAdmin && (
+            <Link
+              href="/projects/new"
+              className="inline-flex h-10 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/80"
+            >
+              New Project
+            </Link>
+          )
+        }
+      >
         <FilterBar
           currentSearch={search}
           currentStatus={status}
@@ -224,7 +241,7 @@ export default async function ProjectsPage({
           currentSort={hasExplicitSort ? sort : ''}
           currentDir={hasExplicitSort ? dir : ''}
         />
-      </div>
+      </RegistryHeader>
 
       <Suspense
         fallback={
@@ -246,6 +263,6 @@ export default async function ProjectsPage({
           currentDir={hasExplicitSort ? dir : ''}
         />
       </Suspense>
-    </div>
+    </RegistryPageShell>
   );
 }

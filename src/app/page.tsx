@@ -1,29 +1,39 @@
-import Link from 'next/link'
-import { ArrowRight, BarChart3, FileText, HandCoins, Landmark } from "lucide-react";
+import Link from 'next/link';
+import {
+  ArrowRight,
+  BarChart3,
+  FileText,
+  HandCoins,
+  Landmark,
+} from 'lucide-react';
 
 const cards = [
   {
-    href: "/projects",
-    title: "Projects",
-    description: "Browse community development work by donor, type, status, and budget.",
+    href: '/projects',
+    title: 'Projects',
+    description:
+      'Browse community development work by donor, type, status, and budget.',
     icon: Landmark,
   },
   {
-    href: "/payments",
-    title: "Payment Releases",
-    description: "Track released checks, vouchers, project links, and payment status.",
+    href: '/payments',
+    title: 'Payment Releases',
+    description:
+      'Track released checks, vouchers, project links, and payment status.',
     icon: HandCoins,
   },
   {
-    href: "/expenses",
-    title: "Expenses",
-    description: "Review operational expenses by account type, date, purpose, and status.",
+    href: '/expenses',
+    title: 'Expenses',
+    description:
+      'Review operational expenses by account type, date, purpose, and status.',
     icon: FileText,
   },
   {
-    href: "/dashboard",
-    title: "Admin Dashboard",
-    description: "Open protected KPI cards, charts, and admin project management links.",
+    href: '/dashboard',
+    title: 'Admin Dashboard',
+    description:
+      'Open protected KPI cards, charts, and admin project management links.',
     icon: BarChart3,
   },
 ];
@@ -38,10 +48,11 @@ export default function Home() {
               Community project operations
             </p>
             <h1 className="max-w-3xl text-4xl font-black tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-              A cleaner dashboard for Masharie projects, payments, and expenses.
+              A simple dashboard for Masharie projects, payments, and expenses.
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-              Review public project data quickly, then sign in as an admin when you need to manage records and charts.
+              Review public project data quickly, then sign in as an admin when
+              you need to manage records and charts.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
@@ -62,18 +73,27 @@ export default function Home() {
           <div className="rounded-[1.5rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-2xl shadow-slate-300/50">
             <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-blue-200">Live overview</p>
-                <p className="mt-1 text-lg font-semibold">Operational clarity</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-blue-200">
+                  Live overview
+                </p>
+                <p className="mt-1 text-lg font-semibold">
+                  Operational clarity
+                </p>
               </div>
-              <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-semibold text-emerald-200">Public data</span>
+              <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-semibold text-emerald-200">
+                Public data
+              </span>
             </div>
             <div className="grid gap-3">
               {[
-                ["Project tracking", "Budgets, donors, status, supervisors"],
-                ["Payment releases", "Checks, vouchers, dates, amounts"],
-                ["Expense visibility", "Account types and release status"],
+                ['Project tracking', 'Budgets, donors, status, supervisors'],
+                ['Payment releases', 'Checks, vouchers, dates, amounts'],
+                ['Expense visibility', 'Account types and release status'],
               ].map(([title, description]) => (
-                <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+                <div
+                  key={title}
+                  className="rounded-2xl border border-white/10 bg-white/[0.06] p-4"
+                >
                   <p className="font-semibold">{title}</p>
                   <p className="mt-1 text-sm text-slate-300">{description}</p>
                 </div>
@@ -96,7 +116,9 @@ export default function Home() {
                 <Icon className="h-5 w-5" aria-hidden="true" />
               </span>
               <h2 className="font-bold text-slate-950">{card.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">{card.description}</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                {card.description}
+              </p>
             </Link>
           );
         })}

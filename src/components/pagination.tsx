@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import { cn } from '@/lib/utils'
+
 type PageItem = number | 'ellipsis'
 
 type PaginationProps = {
@@ -32,24 +34,27 @@ function getPageItems(currentPage: number, totalPages: number): PageItem[] {
   return items
 }
 
+const pageLinkClass =
+  'inline-flex h-9 min-w-9 items-center justify-center rounded-xl border px-3 text-sm font-medium shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-ring/50'
+
 export function Pagination({ currentPage, totalPages, buildHref }: PaginationProps) {
   if (totalPages <= 1) return null
 
   const pageItems = getPageItems(currentPage, totalPages)
 
   return (
-    <nav aria-label="Pagination" className="flex flex-wrap items-center justify-end gap-1">
+    <nav aria-label="Pagination" className="flex flex-wrap items-center justify-end gap-1.5">
       {currentPage > 1 && (
         <Link
           href={buildHref(currentPage - 1)}
-          className="rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 shadow-sm transition-colors hover:bg-blue-50"
+          className={cn(pageLinkClass, 'bg-background text-foreground hover:bg-muted')}
         >
           Previous
         </Link>
       )}
       {pageItems.map((item, index) =>
         item === 'ellipsis' ? (
-          <span key={`ellipsis-${index}`} className="px-2 text-sm text-slate-500" aria-hidden="true">
+          <span key={`ellipsis-${index}`} className="px-2 text-sm text-muted-foreground" aria-hidden="true">
             …
           </span>
         ) : (
@@ -57,11 +62,12 @@ export function Pagination({ currentPage, totalPages, buildHref }: PaginationPro
             key={item}
             href={buildHref(item)}
             aria-current={item === currentPage ? 'page' : undefined}
-            className={`inline-flex h-9 min-w-9 items-center justify-center rounded-xl px-3 text-sm font-semibold transition-colors ${
+            className={cn(
+              pageLinkClass,
               item === currentPage
-                ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
-                : 'border border-blue-200 bg-white text-blue-700 shadow-sm hover:bg-blue-50'
-            }`}
+                ? 'border-primary bg-primary text-primary-foreground shadow-primary/20'
+                : 'bg-background text-foreground hover:bg-muted'
+            )}
           >
             {item}
           </Link>
@@ -70,7 +76,7 @@ export function Pagination({ currentPage, totalPages, buildHref }: PaginationPro
       {currentPage < totalPages && (
         <Link
           href={buildHref(currentPage + 1)}
-          className="rounded-xl border border-blue-200 bg-white px-3 py-1.5 text-sm font-medium text-blue-700 shadow-sm transition-colors hover:bg-blue-50"
+          className={cn(pageLinkClass, 'bg-background text-foreground hover:bg-muted')}
         >
           Next
         </Link>

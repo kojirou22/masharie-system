@@ -4,7 +4,13 @@ import type { KeyboardEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ChevronRight } from 'lucide-react'
-import { Pagination } from '@/components/pagination'
+import {
+  RegistryEmptyState,
+  RegistryPaginationFooter,
+  RegistrySortIcon,
+  RegistryTableShell,
+  registryHeaderCellClass,
+} from '@/components/registry'
 import { formatPHP } from '@/lib/utils/currency'
 import { arabicTextClass, formatDate } from '@/lib/utils/formatters'
 import type { PaymentRelease } from '@/lib/types/database'
@@ -13,19 +19,8 @@ export type PaymentWithProject = PaymentRelease & {
   project: { name: string; project_number: string; supervisor: string; address: string } | null
 }
 
-const headerCellClass =
-  'sticky top-0 z-20 bg-slate-100 px-4 py-3 font-bold text-slate-950 shadow-[inset_0_-1px_0_rgba(148,163,184,0.35)]'
-
 function SortIcon({ active, direction }: { active: boolean; direction: string }) {
-  if (!active) {
-    return <span className="ml-1 text-slate-400" aria-hidden="true">↕</span>
-  }
-
-  return (
-    <span className="ml-1 text-slate-900" aria-hidden="true">
-      {direction === 'asc' ? '↑' : '↓'}
-    </span>
-  )
+  return <RegistrySortIcon active={active} direction={direction} />
 }
 
 export function PaymentsTable({
@@ -53,7 +48,6 @@ export function PaymentsTable({
 }) {
   const router = useRouter()
   const pageSize = 25
-  const totalPages = Math.ceil(total / pageSize)
 
   function openPayment(payment: PaymentWithProject) {
     if (isAdmin) {
@@ -111,45 +105,53 @@ export function PaymentsTable({
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-sm shadow-blue-100/60">
-        <div className="border-b border-blue-100 bg-blue-50/60 px-4 py-2 text-xs font-medium text-blue-700">
-          <span className="sm:hidden">Swipe horizontally to see project details and amounts.</span>
-          <span className="hidden sm:inline">Click a payment row to {isAdmin ? 'edit it' : 'open its project'}.</span>
-        </div>
-        <div className="max-h-[calc(100vh-10rem)] overflow-auto">
-        <table className="w-full min-w-[920px] text-sm">
-          <thead className="bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
+      <RegistryTableShell
+        hint={`Click a payment row to ${isAdmin ? 'edit it' : 'open its project'}.`}
+        mobileHint="Swipe horizontally to see project details and amounts."
+        minWidth="840px"
+        tableClassName="table-fixed"
+      >
+          <colgroup>
+            <col className="w-[76px]" />
+            <col className="w-[82px]" />
+            <col className="w-[92px]" />
+            <col className="w-[190px]" />
+            <col className="w-[120px]" />
+            <col className="w-[170px]" />
+            <col className="w-[110px]" />
+          </colgroup>
+          <thead className="bg-muted text-left text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className={headerCellClass}>
-                <Link href={sortHref('released_date')} className="inline-flex items-center gap-1 hover:text-blue-700">
+              <th className={registryHeaderCellClass}>
+                <Link href={sortHref('released_date')} className="inline-flex items-center gap-1 hover:text-primary">
                   Date
                   <SortIcon active={currentSort === 'released_date'} direction={currentDir} />
                 </Link>
               </th>
-              <th className={headerCellClass}>
-                <Link href={sortHref('check_number')} className="inline-flex items-center gap-1 hover:text-blue-700">
+              <th className={registryHeaderCellClass}>
+                <Link href={sortHref('check_number')} className="inline-flex items-center gap-1 hover:text-primary">
                   Check #
                   <SortIcon active={currentSort === 'check_number'} direction={currentDir} />
                 </Link>
               </th>
-              <th className={headerCellClass}>
-                <Link href={sortHref('voucher_number')} className="inline-flex items-center gap-1 hover:text-blue-700">
+              <th className={registryHeaderCellClass}>
+                <Link href={sortHref('voucher_number')} className="inline-flex items-center gap-1 hover:text-primary">
                   Voucher #
                   <SortIcon active={currentSort === 'voucher_number'} direction={currentDir} />
                 </Link>
               </th>
-              <th className={headerCellClass}>Project #</th>
-              <th className={headerCellClass}>Supervisor</th>
-              <th className={headerCellClass}>Address</th>
-              <th className={`${headerCellClass} text-right`}>
-                <Link href={sortHref('amount')} className="inline-flex items-center justify-end gap-1 hover:text-blue-700">
+              <th className={registryHeaderCellClass}>Project</th>
+              <th className={registryHeaderCellClass}>Supervisor</th>
+              <th className={registryHeaderCellClass}>Address</th>
+              <th className={`${registryHeaderCellClass} text-right`}>
+                <Link href={sortHref('amount')} className="inline-flex items-center justify-end gap-1 hover:text-primary">
                   Amount
                   <SortIcon active={currentSort === 'amount'} direction={currentDir} />
                 </Link>
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-border/70">
             {payments.map((payment) => {
               const isClickable = isAdmin || Boolean(payment.project_id)
 
@@ -159,23 +161,28 @@ export function PaymentsTable({
                   role={isClickable ? 'link' : undefined}
                   tabIndex={isClickable ? 0 : undefined}
                   aria-label={isClickable ? (isAdmin ? 'Edit payment' : `Open project ${payment.project?.project_number ?? ''}`) : undefined}
-                  className={`${isClickable ? 'group cursor-pointer focus:outline-none focus-visible:bg-blue-50 focus-visible:[box-shadow:inset_3px_0_0_rgb(59_130_246)]' : ''} transition-colors hover:bg-blue-50/60`}
+                  className={`${isClickable ? 'group cursor-pointer focus:outline-none focus-visible:bg-muted focus-visible:[box-shadow:inset_3px_0_0_var(--ring)]' : ''} transition-colors hover:bg-muted/50`}
                   onClick={() => openPayment(payment)}
                   onKeyDown={(event) => handlePaymentKeyDown(event, payment)}
                 >
-                  <td className="px-4 py-3 text-gray-500 text-xs">{formatDate(payment.released_date ?? payment.released_at ?? payment.created_at)}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-600">{payment.check_number ?? '—'}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-600">{payment.voucher_number ?? '—'}</td>
+                  <td className="px-4 py-3 text-xs font-medium text-muted-foreground">{formatDate(payment.released_date ?? payment.released_at ?? payment.created_at)}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{payment.check_number ?? '—'}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-muted-foreground">{payment.voucher_number ?? '—'}</td>
                   <td className="px-4 py-3">
                     {payment.project ? (
-                      <span className="font-medium text-blue-700">{payment.project.project_number}</span>
+                      <div className="space-y-0.5">
+                        <span className="block font-mono text-xs font-medium text-primary">{payment.project.project_number}</span>
+                        <span className={`block max-w-[220px] truncate text-sm font-medium text-foreground ${arabicTextClass(payment.project.name)}`}>
+                          {payment.project.name}
+                        </span>
+                      </div>
                     ) : (
-                      <span className="text-gray-400">—</span>
+                      <span className="text-muted-foreground/70">—</span>
                     )}
                   </td>
-                  <td className={`px-4 py-3 text-gray-600 ${arabicTextClass(payment.project?.supervisor)}`}>{payment.project?.supervisor ?? '—'}</td>
-                  <td className={`px-4 py-3 text-gray-600 max-w-[220px] truncate ${arabicTextClass(payment.project?.address)}`}>{payment.project?.address ?? '—'}</td>
-                  <td className="px-4 py-3 text-right font-medium">
+                  <td className={`px-4 py-3 text-muted-foreground ${arabicTextClass(payment.project?.supervisor)}`}>{payment.project?.supervisor ?? '—'}</td>
+                  <td className={`max-w-[220px] truncate px-4 py-3 text-muted-foreground ${arabicTextClass(payment.project?.address)}`}>{payment.project?.address ?? '—'}</td>
+                  <td className="px-4 py-3 text-right font-medium text-foreground">
                     <span className="inline-flex items-center justify-end gap-1">
                       {formatPHP(payment.amount)}
                       {isClickable && (
@@ -187,25 +194,13 @@ export function PaymentsTable({
               )
             })}
           </tbody>
-        </table>
-        </div>
-      </div>
+      </RegistryTableShell>
 
       {total === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-          <p className="text-lg font-medium">No payments match your filters</p>
-          <Link href="/payments" className="mt-2 text-blue-700 hover:underline text-sm">Clear all filters</Link>
-        </div>
+        <RegistryEmptyState clearHref="/payments" message="No payments match your filters" />
       )}
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-2">
-          <p className="text-sm text-gray-600">
-            Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
-          </p>
-          <Pagination currentPage={page} totalPages={totalPages} buildHref={pageHref} />
-        </div>
-      )}
+      <RegistryPaginationFooter currentPage={page} total={total} pageSize={pageSize} buildHref={pageHref} />
     </div>
   )
 }

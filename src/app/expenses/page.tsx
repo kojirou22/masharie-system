@@ -2,8 +2,21 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { AutoFilterForm } from '@/components/auto-filter-form';
 import { DateRangeFilter } from '@/components/date-range-filter';
+import {
+  RegistryEmptyState,
+  RegistryHeader,
+  RegistryPageShell,
+  RegistryPaginationFooter,
+  RegistrySortIcon,
+  RegistryStatBadge,
+  RegistryTableShell,
+  registryFilterGridClass,
+  registryHeaderCellClass,
+  registryInputClass,
+  registryLabelClass,
+  registrySelectClass,
+} from '@/components/registry';
 import { ExpenseRow } from '@/components/expenses/expense-row';
-import { Pagination } from '@/components/pagination';
 import { getAdminUser } from '@/lib/auth/admin';
 import { getExpenses, type ExpenseSortColumn, type SortDirection } from '@/lib/supabase/queries/expenses';
 import { formatPHP } from '@/lib/utils/currency';
@@ -49,19 +62,8 @@ function getDefaultDateRange() {
   };
 }
 
-const headerCellClass =
-  'sticky top-0 z-20 bg-slate-100 px-4 py-3 font-bold text-slate-950 shadow-[inset_0_-1px_0_rgba(148,163,184,0.35)]';
-
 function SortIcon({ active, direction }: { active: boolean; direction: string }) {
-  if (!active) {
-    return <span className="ml-1 text-slate-400" aria-hidden="true">↕</span>;
-  }
-
-  return (
-    <span className="ml-1 text-slate-900" aria-hidden="true">
-      {direction === 'asc' ? '↑' : '↓'}
-    </span>
-  );
+  return <RegistrySortIcon active={active} direction={direction} />;
 }
 
 function ExpensesTable({
@@ -90,7 +92,6 @@ function ExpensesTable({
   isAdmin: boolean;
 }) {
   const pageSize = 25;
-  const totalPages = Math.ceil(total / pageSize);
 
   function baseParams() {
     const params = new URLSearchParams();
@@ -131,89 +132,70 @@ function ExpensesTable({
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-sm shadow-blue-100/60">
-        <div className="border-b border-blue-100 bg-blue-50/60 px-4 py-2 text-xs font-medium text-blue-700">
-          <span className="sm:hidden">Swipe horizontally to see requester, amount, and account.</span>
-          <span className="hidden sm:inline">{isAdmin ? 'Click an expense row to edit it.' : 'Expense rows are read-only.'}</span>
-        </div>
-        <div className="max-h-[calc(100vh-10rem)] overflow-auto">
-          <table className="w-full min-w-[900px] text-sm">
-            <thead className="bg-slate-100 text-left text-xs uppercase tracking-wide text-slate-600">
-              <tr>
-                <th className={headerCellClass}>
-                  <Link href={sortHref('date')} className="inline-flex items-center gap-1 hover:text-blue-700">
-                    Date
-                    <SortIcon active={currentSort === 'date'} direction={currentDir} />
-                  </Link>
-                </th>
-                <th className={headerCellClass}>
-                  <Link href={sortHref('check_number')} className="inline-flex items-center gap-1 hover:text-blue-700">
-                    Check #
-                    <SortIcon active={currentSort === 'check_number'} direction={currentDir} />
-                  </Link>
-                </th>
-                <th className={headerCellClass}>
-                  <Link href={sortHref('voucher_number')} className="inline-flex items-center gap-1 hover:text-blue-700">
-                    Voucher #
-                    <SortIcon active={currentSort === 'voucher_number'} direction={currentDir} />
-                  </Link>
-                </th>
-                <th className={headerCellClass}>
-                  <Link href={sortHref('purpose')} className="inline-flex items-center gap-1 hover:text-blue-700">
-                    Purpose
-                    <SortIcon active={currentSort === 'purpose'} direction={currentDir} />
-                  </Link>
-                </th>
-                <th className={headerCellClass}>
-                  <Link href={sortHref('requested_by')} className="inline-flex items-center gap-1 hover:text-blue-700">
-                    Requested By
-                    <SortIcon active={currentSort === 'requested_by'} direction={currentDir} />
-                  </Link>
-                </th>
-                <th className={`${headerCellClass} text-right`}>
-                  <Link href={sortHref('amount')} className="inline-flex items-center justify-end gap-1 hover:text-blue-700">
-                    Amount
-                    <SortIcon active={currentSort === 'amount'} direction={currentDir} />
-                  </Link>
-                </th>
-                <th className={headerCellClass}>
-                  <Link href={sortHref('account_type')} className="inline-flex items-center gap-1 hover:text-blue-700">
-                    Account
-                    <SortIcon active={currentSort === 'account_type'} direction={currentDir} />
-                  </Link>
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {expenses.map((expense) => (
-                <ExpenseRow key={expense.id} expense={expense} isAdmin={isAdmin} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <RegistryTableShell
+        hint={isAdmin ? 'Click an expense row to edit it.' : 'Expense rows are read-only.'}
+        mobileHint="Swipe horizontally to see requester, status, amount, and account."
+        minWidth="940px"
+      >
+        <thead className="bg-muted text-left text-xs uppercase tracking-wide text-muted-foreground">
+          <tr>
+            <th className={registryHeaderCellClass}>
+              <Link href={sortHref('date')} className="inline-flex items-center gap-1 hover:text-primary">
+                Date
+                <SortIcon active={currentSort === 'date'} direction={currentDir} />
+              </Link>
+            </th>
+            <th className={registryHeaderCellClass}>
+              <Link href={sortHref('check_number')} className="inline-flex items-center gap-1 hover:text-primary">
+                Check #
+                <SortIcon active={currentSort === 'check_number'} direction={currentDir} />
+              </Link>
+            </th>
+            <th className={registryHeaderCellClass}>
+              <Link href={sortHref('voucher_number')} className="inline-flex items-center gap-1 hover:text-primary">
+                Voucher #
+                <SortIcon active={currentSort === 'voucher_number'} direction={currentDir} />
+              </Link>
+            </th>
+            <th className={registryHeaderCellClass}>
+              <Link href={sortHref('purpose')} className="inline-flex items-center gap-1 hover:text-primary">
+                Purpose
+                <SortIcon active={currentSort === 'purpose'} direction={currentDir} />
+              </Link>
+            </th>
+            <th className={registryHeaderCellClass}>
+              <Link href={sortHref('requested_by')} className="inline-flex items-center gap-1 hover:text-primary">
+                Requested By
+                <SortIcon active={currentSort === 'requested_by'} direction={currentDir} />
+              </Link>
+            </th>
+            <th className={registryHeaderCellClass}>Status</th>
+            <th className={`${registryHeaderCellClass} text-right`}>
+              <Link href={sortHref('amount')} className="inline-flex items-center justify-end gap-1 hover:text-primary">
+                Amount
+                <SortIcon active={currentSort === 'amount'} direction={currentDir} />
+              </Link>
+            </th>
+            <th className={registryHeaderCellClass}>
+              <Link href={sortHref('account_type')} className="inline-flex items-center gap-1 hover:text-primary">
+                Account
+                <SortIcon active={currentSort === 'account_type'} direction={currentDir} />
+              </Link>
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border/70">
+          {expenses.map((expense) => (
+            <ExpenseRow key={expense.id} expense={expense} isAdmin={isAdmin} />
+          ))}
+        </tbody>
+      </RegistryTableShell>
 
       {total === 0 && (
-        <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-          <p className="text-lg font-medium">No expenses match your filters</p>
-          <Link
-            href="/expenses"
-            className="mt-2 text-blue-700 hover:underline text-sm"
-          >
-            Clear all filters
-          </Link>
-        </div>
+        <RegistryEmptyState clearHref="/expenses" message="No expenses match your filters" />
       )}
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between px-2">
-          <p className="text-sm text-gray-600">
-            Showing {(page - 1) * pageSize + 1}–
-            {Math.min(page * pageSize, total)} of {total}
-          </p>
-          <Pagination currentPage={page} totalPages={totalPages} buildHref={pageHref} />
-        </div>
-      )}
+      <RegistryPaginationFooter currentPage={page} total={total} pageSize={pageSize} buildHref={pageHref} />
     </div>
   );
 }
@@ -238,7 +220,7 @@ function FilterBar({
   return (
     <AutoFilterForm
       action="/expenses"
-      className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(360px,1fr)_auto_auto_auto] lg:items-end"
+      className={registryFilterGridClass}
     >
       {currentSort && currentDir && (
         <>
@@ -249,7 +231,7 @@ function FilterBar({
       <div className="sm:col-span-2 lg:col-span-1">
         <label
           htmlFor="search"
-          className="block text-xs font-medium text-blue-700 mb-1"
+          className={registryLabelClass}
         >
           Search
         </label>
@@ -259,7 +241,7 @@ function FilterBar({
           type="text"
           defaultValue={currentSearch}
           placeholder="Check #, voucher #, purpose, requester..."
-          className="h-9 w-full rounded-lg border border-blue-200 px-3 py-1.5 text-sm shadow-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={registryInputClass}
         />
       </div>
       <DateRangeFilter
@@ -270,7 +252,7 @@ function FilterBar({
       <div>
         <label
           htmlFor="status"
-          className="block text-xs font-medium text-blue-700 mb-1"
+          className={registryLabelClass}
         >
           Status
         </label>
@@ -278,7 +260,7 @@ function FilterBar({
           id="status"
           name="status"
           defaultValue={currentStatus}
-          className="h-9 w-full rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-28"
+          className={`${registrySelectClass} lg:w-28`}
         >
           <option value="">All</option>
           {STATUS_OPTIONS.map((s) => (
@@ -291,7 +273,7 @@ function FilterBar({
       <div>
         <label
           htmlFor="account_type"
-          className="block text-xs font-medium text-blue-700 mb-1"
+          className={registryLabelClass}
         >
           Account Type
         </label>
@@ -299,7 +281,7 @@ function FilterBar({
           id="account_type"
           name="account_type"
           defaultValue={currentAccountType}
-          className="h-9 w-full rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 lg:w-44"
+          className={`${registrySelectClass} lg:w-44`}
         >
           <option value="">All</option>
           {ACCOUNT_OPTIONS.map((a) => (
@@ -354,31 +336,26 @@ export default async function ExpensesPage({
   ]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-4 sm:py-6">
-      <div className="relative z-30 mb-4 rounded-3xl border border-blue-100 bg-white/85 p-5 shadow-sm shadow-blue-100/60 backdrop-blur sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
-              Expenses
-            </h1>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-700">
-              {total} total expenses
-            </span>
-            <span className="inline-flex items-center rounded-full border border-rose-100 bg-rose-50 px-3 py-1 text-sm font-semibold text-rose-700">
-              {formatPHP(totalAmount)} total amount
-            </span>
-            {isAdmin && (
-              <Link
-                href="/expenses/new"
-                className="inline-flex h-11 items-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm shadow-blue-200 transition-colors hover:bg-blue-700"
-              >
-                New Expense
-              </Link>
-            )}
-          </div>
-        </div>
+    <RegistryPageShell>
+      <RegistryHeader
+        title="Expenses"
+        stats={
+          <>
+            <RegistryStatBadge>{total} total expenses</RegistryStatBadge>
+            <RegistryStatBadge tone="rose">{formatPHP(totalAmount)} total amount</RegistryStatBadge>
+          </>
+        }
+        actions={
+          isAdmin && (
+            <Link
+              href="/expenses/new"
+              className="inline-flex h-10 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/80"
+            >
+              New Expense
+            </Link>
+          )
+        }
+      >
         <FilterBar
           currentSearch={search}
           currentStatus={status}
@@ -388,7 +365,7 @@ export default async function ExpensesPage({
           currentSort={hasExplicitSort ? sort : ''}
           currentDir={hasExplicitSort ? dir : ''}
         />
-      </div>
+      </RegistryHeader>
 
       <Suspense
         fallback={
@@ -411,6 +388,6 @@ export default async function ExpensesPage({
           isAdmin={isAdmin}
         />
       </Suspense>
-    </div>
+    </RegistryPageShell>
   );
 }
