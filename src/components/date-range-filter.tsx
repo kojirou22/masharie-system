@@ -49,7 +49,7 @@ function startOfYear(date: Date) {
 function getLabel(from: string, to: string) {
   if (!from && !to) return 'All time'
   if (from && to && from === to) return formatDateLabel(from)
-  if (from && to) return `${formatDateLabel(from)} – ${formatDateLabel(to)}`
+  if (from && to) return `${formatDateLabel(from)} - ${formatDateLabel(to)}`
   if (from) return `From ${formatDateLabel(from)}`
   return `Until ${formatDateLabel(to)}`
 }
@@ -129,7 +129,7 @@ export function DateRangeFilter({ from, to }: DateRangeFilterProps) {
       <input type="hidden" name="date_to" value={hasInvalidRange ? to : draftTo} />
       <label
         htmlFor="period-filter"
-        className="block text-xs font-medium text-blue-700 mb-1"
+        className="mb-1 block text-xs font-medium text-blue-700 sr-only sm:not-sr-only"
       >
         Period
       </label>

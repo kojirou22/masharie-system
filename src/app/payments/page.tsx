@@ -67,7 +67,8 @@ function FilterBar({
   return (
     <AutoFilterForm
       action="/payments"
-      className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(420px,1fr)_auto_auto] lg:items-end"
+      className="registry-compact-filter-grid grid gap-3"
+      hideMobileSubmit
     >
       {currentSort && currentDir && (
         <>
@@ -78,7 +79,7 @@ function FilterBar({
       <div className="sm:col-span-2 lg:col-span-1">
         <label
           htmlFor="search"
-          className={registryLabelClass}
+          className={`${registryLabelClass} sr-only sm:not-sr-only`}
         >
           Search
         </label>
@@ -91,31 +92,58 @@ function FilterBar({
           className={registryInputClass}
         />
       </div>
-      <DateRangeFilter
-        key={`${currentDateFrom}:${currentDateTo}`}
-        from={currentDateFrom}
-        to={currentDateTo}
+      <input
+        id="payment-filter-toggle"
+        type="checkbox"
+        className="peer sr-only sm:hidden"
+        data-no-auto-submit
+        defaultChecked={Boolean(currentStatus)}
       />
-      <div>
-        <label
-          htmlFor="status"
-          className={registryLabelClass}
+      <label
+        htmlFor="payment-filter-toggle"
+        className="flex h-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/80 peer-checked:hidden sm:hidden"
+      >
+        Filters
+      </label>
+      <label
+        htmlFor="payment-filter-toggle"
+        className="hidden h-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/80 peer-checked:flex sm:hidden"
+      >
+        Hide
+      </label>
+      <div className="col-span-2 hidden gap-3 peer-checked:grid sm:contents">
+        <DateRangeFilter
+          key={`${currentDateFrom}:${currentDateTo}`}
+          from={currentDateFrom}
+          to={currentDateTo}
+        />
+        <div>
+          <label
+            htmlFor="status"
+            className={registryLabelClass}
+          >
+            Status
+          </label>
+          <select
+            id="status"
+            name="status"
+            defaultValue={currentStatus}
+            className={`${registrySelectClass} lg:w-28`}
+          >
+            <option value="">All</option>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+        <button
+          type="submit"
+          className="inline-flex h-11 touch-manipulation items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm shadow-blue-200 sm:hidden"
         >
-          Status
-        </label>
-        <select
-          id="status"
-          name="status"
-          defaultValue={currentStatus}
-          className={`${registrySelectClass} lg:w-28`}
-        >
-          <option value="">All</option>
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
+          Apply filters
+        </button>
       </div>
     </AutoFilterForm>
   );

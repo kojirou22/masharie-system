@@ -76,7 +76,7 @@ function FilterBar({
   return (
     <AutoFilterForm
       action="/projects"
-      className="projects-filter-grid grid gap-3"
+      className="registry-compact-filter-grid grid gap-3"
       hideMobileSubmit
     >
       {currentSort && currentDir && (
