@@ -45,3 +45,6 @@ next-env.d.ts
 
 # auto-generated docs
 PROJECT_SUMMARY.md
+
+# local data import staging
+/data-import/

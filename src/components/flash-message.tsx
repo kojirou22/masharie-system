@@ -22,7 +22,12 @@ function readFlashCookie(): Flash | null {
   document.cookie = `${FLASH_COOKIE}=; path=/; max-age=0; SameSite=Lax`
 
   try {
-    return JSON.parse(decodeURIComponent(cookie.slice(FLASH_COOKIE.length + 1))) as Flash
+    let value = cookie.slice(FLASH_COOKIE.length + 1)
+    for (let i = 0; i < 2; i += 1) {
+      value = decodeURIComponent(value)
+    }
+
+    return JSON.parse(value) as Flash
   } catch {
     return null
   }

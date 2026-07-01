@@ -88,6 +88,7 @@ function DashboardFrame({
     <div className="min-h-screen bg-background text-foreground">
       <DesktopSidebar
         collapsed={sidebarCollapsed}
+        isAuthenticated={isAuthenticated}
         pathname={pathname}
         onToggle={toggleCollapsed}
       />
@@ -108,13 +109,19 @@ function DashboardFrame({
 
 function DesktopSidebar({
   collapsed,
+  isAuthenticated,
   pathname,
   onToggle,
 }: {
   collapsed: boolean
+  isAuthenticated: boolean
   pathname: string
   onToggle: () => void
 }) {
+  const visiblePrimaryNavItems = isAuthenticated
+    ? primaryNavItems
+    : primaryNavItems.filter((item) => item.href !== '/dashboard')
+
   return (
     <aside
       className={cn(
@@ -125,7 +132,7 @@ function DesktopSidebar({
     >
       <div className="flex h-16 items-center gap-3 px-4">
         <Link
-          href="/dashboard"
+          href={isAuthenticated ? '/dashboard' : '/'}
           className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           aria-label="Masharie dashboard"
         >
@@ -150,16 +157,18 @@ function DesktopSidebar({
       <div className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
         <NavSection
           collapsed={collapsed}
-          items={primaryNavItems}
+          items={visiblePrimaryNavItems}
           pathname={pathname}
           title="Operations"
         />
-        <NavSection
-          collapsed={collapsed}
-          items={quickActionItems}
-          pathname={pathname}
-          title="Create"
-        />
+        {isAuthenticated && (
+          <NavSection
+            collapsed={collapsed}
+            items={quickActionItems}
+            pathname={pathname}
+            title="Create"
+          />
+        )}
       </div>
 
       <div className="border-t border-border/80 p-3">
@@ -301,6 +310,10 @@ function MobileNav({
   isAuthenticated: boolean
   pathname: string
 }) {
+  const visiblePrimaryNavItems = isAuthenticated
+    ? primaryNavItems
+    : primaryNavItems.filter((item) => item.href !== '/dashboard')
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -314,8 +327,10 @@ function MobileNav({
           <SheetDescription>Projects, payments, and expenses</SheetDescription>
         </SheetHeader>
         <div className="space-y-6 p-4">
-          <MobileNavSection items={primaryNavItems} pathname={pathname} title="Operations" />
-          <MobileNavSection items={quickActionItems} pathname={pathname} title="Create" />
+          <MobileNavSection items={visiblePrimaryNavItems} pathname={pathname} title="Operations" />
+          {isAuthenticated && (
+            <MobileNavSection items={quickActionItems} pathname={pathname} title="Create" />
+          )}
           <AuthAction isAuthenticated={isAuthenticated} className="w-full" />
         </div>
       </SheetContent>
