@@ -48,3 +48,7 @@ PROJECT_SUMMARY.md
 
 # local data import staging
 /data-import/
+
+# Hermes temporary tool files
+.hermes-tmp.*/
+**/.hermes-tmp.*/
