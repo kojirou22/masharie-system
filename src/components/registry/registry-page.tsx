@@ -56,7 +56,7 @@ export function RegistryFilterPanel({
   className?: string
 }) {
   return (
-    <div className={cn('border-t border-border/70 pt-4', className)}>
+    <div className={cn('border-t border-border/70 pt-3 sm:pt-4', className)}>
       {children}
     </div>
   )

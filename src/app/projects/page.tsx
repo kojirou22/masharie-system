@@ -5,7 +5,6 @@ import {
   RegistryHeader,
   RegistryPageShell,
   RegistryStatBadge,
-  registryFilterGridClass,
   registryInputClass,
   registryLabelClass,
   registrySelectClass,
@@ -77,7 +76,7 @@ function FilterBar({
   return (
     <AutoFilterForm
       action="/projects"
-      className={registryFilterGridClass}
+      className="projects-filter-grid grid gap-3"
       hideMobileSubmit
     >
       {currentSort && currentDir && (
@@ -89,7 +88,7 @@ function FilterBar({
       <div className="sm:col-span-2 lg:col-span-1">
         <label
           htmlFor="search"
-          className={registryLabelClass}
+          className={`${registryLabelClass} sr-only sm:not-sr-only`}
         >
           Search
         </label>
@@ -113,15 +112,15 @@ function FilterBar({
         htmlFor="project-filter-toggle"
         className="flex h-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/80 peer-checked:hidden sm:hidden"
       >
-        Expand filters
+        Filters
       </label>
       <label
         htmlFor="project-filter-toggle"
         className="hidden h-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/80 peer-checked:flex sm:hidden"
       >
-        Hide filters
+        Hide
       </label>
-      <div className="hidden gap-3 peer-checked:grid sm:contents">
+      <div className="col-span-2 hidden gap-3 peer-checked:grid sm:contents">
         <div>
           <label
             htmlFor="status"

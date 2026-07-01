@@ -180,6 +180,23 @@ select {
   cursor: pointer;
 }
 
+.projects-filter-grid {
+  grid-template-columns: minmax(0, 1fr) 116px;
+}
+
+@media (min-width: 640px) {
+  .projects-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .projects-filter-grid {
+    grid-template-columns: minmax(360px, 1fr) repeat(4, auto);
+    align-items: end;
+  }
+}
+
 input,
 select,
 textarea {

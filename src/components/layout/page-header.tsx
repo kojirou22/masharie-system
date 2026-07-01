@@ -26,7 +26,7 @@ export function PageHeader({
         className
       )}
     >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3 lg:items-start">
         <div className="min-w-0">
           {eyebrow && (
             <p className="mb-2 text-sm font-medium text-muted-foreground">
@@ -45,9 +45,9 @@ export function PageHeader({
             </p>
           )}
         </div>
-        {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+        {actions && <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-2">{actions}</div>}
       </div>
-      {children && <div className="mt-4">{children}</div>}
+      {children && <div className="mt-3 sm:mt-4">{children}</div>}
     </section>
   )
 }
