@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 
 import { PageHeader } from '@/components/layout/page-header'
-import { Surface } from '@/components/ui/surface'
 import { cn } from '@/lib/utils'
 
 export function RegistryPageShell({
@@ -11,7 +10,7 @@ export function RegistryPageShell({
   children: ReactNode
   className?: string
 }) {
-  return <div className={cn('mx-auto max-w-7xl px-4 py-4 sm:py-6', className)}>{children}</div>
+  return <div className={cn('mx-auto max-w-7xl px-0 py-3 sm:py-5', className)}>{children}</div>
 }
 
 export function RegistryHeader({
@@ -57,9 +56,9 @@ export function RegistryFilterPanel({
   className?: string
 }) {
   return (
-    <Surface className={cn('border-border/70 bg-muted/20 p-3 shadow-none sm:p-4', className)}>
+    <div className={cn('border-t border-border/70 pt-4', className)}>
       {children}
-    </Surface>
+    </div>
   )
 }
 
@@ -86,7 +85,7 @@ export function RegistryStatBadge({
 }
 
 export const registryFilterGridClass =
-  'grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(360px,1fr)_repeat(4,auto)] lg:items-end'
+  'grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(360px,1fr)_repeat(4,auto)] lg:items-end'
 
 export const registryLabelClass = 'mb-1 block text-xs font-medium text-muted-foreground'
 

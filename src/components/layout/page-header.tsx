@@ -22,14 +22,14 @@ export function PageHeader({
   return (
     <section
       className={cn(
-        'mb-4 rounded-3xl border border-border/80 bg-card/90 p-5 shadow-sm backdrop-blur sm:p-6',
+        'mb-4 rounded-3xl border border-border/80 bg-card/95 p-4 shadow-sm backdrop-blur sm:p-5',
         className
       )}
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           {eyebrow && (
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <p className="mb-2 text-sm font-medium text-muted-foreground">
               {eyebrow}
             </p>
           )}

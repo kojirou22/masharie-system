@@ -1,10 +1,17 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+
 import { Breadcrumbs } from '@/components/breadcrumbs'
+import { FormSection, FormShell, Field, ProjectSelect, SelectField } from '@/components/forms'
+import { Badge } from '@/components/ui/badge'
+import { Textarea } from '@/components/ui/textarea'
 import { requireAdmin } from '@/lib/auth/admin'
 import { setFlash } from '@/lib/flash'
 import { paymentSchema } from '@/lib/validations/payment'
+import { formatPHP } from '@/lib/utils/currency'
+import { arabicTextClass } from '@/lib/utils/formatters'
 import type { PaymentStatus } from '@/lib/types/database'
+
+const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = ['Pending', 'Released', 'Cancelled']
 
 export default async function EditPaymentPage({
   params,
@@ -69,109 +76,76 @@ export default async function EditPaymentPage({
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 sm:py-10">
-      <Breadcrumbs items={[{ label: 'Payments', href: '/payments' }, { label: 'Edit Payment' }]} />
-      <Link href="/payments" className="text-sm text-blue-700 hover:underline mb-4 inline-block">
-        ← Back to payments
-      </Link>
-      <h1 className="text-2xl font-bold text-slate-950 mb-6 font-mono">
-        Edit Payment Release
-      </h1>
-      <form action={updatePayment} className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60 space-y-4">
-        <div>
-          <label htmlFor="project_id" className="block text-sm font-medium text-blue-700 mb-1">
-            Project <span className="text-red-500">*</span>
-          </label>
-          <select
-            id="project_id"
-            name="project_id"
-            required
-            defaultValue={payment.project_id}
-            className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-          >
-            <option value="" disabled>Select a project...</option>
-            {projects?.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.project_number} — {project.name}
-              </option>
-            ))}
-          </select>
+    <FormShell
+      action={updatePayment}
+      backHref="/payments"
+      backLabel="Back to payments"
+      breadcrumbs={(
+        <Breadcrumbs
+          items={[
+            { label: 'Payments', href: '/payments' },
+            { label: payment.project?.project_number ?? 'Payment' },
+            { label: 'Edit' },
+          ]}
+        />
+      )}
+      description="Adjust one payment allocation while keeping the release field contract intact."
+      meta={(
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline">{payment.status}</Badge>
+          <Badge variant="secondary">{formatPHP(Number(payment.amount))}</Badge>
         </div>
+      )}
+      submitHint={(
+        <>
+          Fields marked <span className="text-destructive">*</span> are required.
+        </>
+      )}
+      submitLabel="Save Changes"
+      title="Edit Payment Release"
+    >
+      <FormSection
+        title="Project allocation"
+        description="Select the project this release row belongs to and confirm the released amount."
+      >
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_180px]">
+          <ProjectSelect projects={projects ?? []} defaultValue={payment.project_id} />
+          <Field name="amount" label="Amount (PHP)" type="number" defaultValue={String(payment.amount)} required />
+        </div>
+        {payment.project && (
+          <div className="mt-3 rounded-xl border border-border/80 bg-muted/35 px-3 py-2 text-sm">
+            <span className="font-mono text-xs font-medium text-primary">{payment.project.project_number}</span>{' '}
+            <span className={arabicTextClass(payment.project.name)}>{payment.project.name}</span>
+          </div>
+        )}
+      </FormSection>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <FormSection
+        title="Release details"
+        description="Check number, voucher, date, and lifecycle status for this allocation."
+      >
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Field name="check_number" label="Check Number" defaultValue={payment.check_number ?? ''} />
           <Field name="voucher_number" label="Voucher Number" defaultValue={payment.voucher_number ?? ''} />
-          <Field name="amount" label="Amount (PHP)" type="number" defaultValue={String(payment.amount)} required />
-          <SelectField name="status" label="Status" options={['Pending', 'Released', 'Cancelled']} defaultValue={payment.status} required />
+          <SelectField name="status" label="Status" options={PAYMENT_STATUS_OPTIONS} defaultValue={payment.status} required />
           <Field name="released_date" label="Release Date" type="date" defaultValue={payment.released_date ?? ''} />
         </div>
+      </FormSection>
 
+      <FormSection title="Notes" description="Optional context attached to this payment row.">
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium text-blue-700 mb-1">Notes</label>
-          <textarea
+          <label htmlFor="notes" className="mb-1.5 block text-sm font-medium text-foreground">
+            Notes
+          </label>
+          <Textarea
             id="notes"
             name="notes"
             rows={3}
             defaultValue={payment.notes ?? ''}
             placeholder="Optional notes..."
-            className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-
-        <button
-          type="submit"
-          className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors"
-        >
-          Save Changes
-        </button>
-      </form>
-    </div>
-  )
-}
-
-function Field({ name, label, placeholder, defaultValue, type = 'text', required = false }: {
-  name: string; label: string; placeholder?: string; defaultValue?: string; type?: string; required?: boolean
-}) {
-  return (
-    <div>
-      <label htmlFor={name} className="block text-sm font-medium text-blue-700 mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        defaultValue={defaultValue}
-        required={required}
-        min={type === 'number' ? '0.01' : undefined}
-        step={type === 'number' ? '0.01' : undefined}
-        className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
-  )
-}
-
-function SelectField({ name, label, options, defaultValue, required = false }: {
-  name: string; label: string; options: string[]; defaultValue?: string; required?: boolean
-}) {
-  return (
-    <div>
-      <label htmlFor={name} className="block text-sm font-medium text-blue-700 mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <select
-        id={name}
-        name={name}
-        required={required}
-        defaultValue={defaultValue}
-        className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-      >
-        <option value="" disabled={required}>Select...</option>
-        {options.map((option) => (
-          <option key={option} value={option}>{option}</option>
-        ))}
-      </select>
-    </div>
+      </FormSection>
+    </FormShell>
   )
 }

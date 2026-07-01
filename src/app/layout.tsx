@@ -5,6 +5,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { DashboardShell } from '@/components/layout/dashboard-shell'
 import { FlashMessage } from '@/components/flash-message'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { createClient } from '@/lib/supabase/server'
 import './globals.css'
 
 const geistSans = Geist({
@@ -41,11 +42,16 @@ const themeInitScript = `
 })();
 `
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   return (
     <html
       lang="en"
@@ -63,7 +69,7 @@ export default function RootLayout({
           >
             Skip to content
           </Link>
-          <DashboardShell>{children}</DashboardShell>
+          <DashboardShell isAuthenticated={Boolean(user)}>{children}</DashboardShell>
           <FlashMessage />
         </TooltipProvider>
       </body>

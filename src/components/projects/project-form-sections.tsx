@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { ComponentProps, ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { arabicTextClass } from '@/lib/utils/formatters'
 import type { ProjectStatus, ProjectType } from '@/lib/types/database'
@@ -75,9 +75,9 @@ export function ProjectFormShell({
 
       <Card className="border-border/80 shadow-sm">
         <CardHeader className="gap-2 border-b border-border/80">
-          <CardTitle className="font-mono text-2xl font-bold tracking-tight text-foreground">
+          <h1 className="font-mono text-2xl font-bold tracking-tight text-foreground">
             {title}
-          </CardTitle>
+          </h1>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
         <form action={action}>
@@ -161,7 +161,7 @@ function FormSection({ children, description, title }: { children: ReactNode; de
   return (
     <section className="rounded-2xl border border-border/80 bg-background/60 p-4 shadow-sm">
       <div className="mb-4">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-foreground">{title}</h2>
+        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       </div>
       {children}

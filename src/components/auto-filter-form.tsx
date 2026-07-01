@@ -8,10 +8,12 @@ export function AutoFilterForm({
   action,
   children,
   className,
+  hideMobileSubmit = false,
 }: {
   action: string
   children: ReactNode
   className?: string
+  hideMobileSubmit?: boolean
 }) {
   const formRef = useRef<HTMLFormElement>(null)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -46,12 +48,14 @@ export function AutoFilterForm({
       onInput={(event) => handleAutoSubmit(event.target)}
     >
       {children}
-      <button
-        type="submit"
-        className="inline-flex h-11 touch-manipulation items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm shadow-blue-200 sm:hidden"
-      >
-        Apply filters
-      </button>
+      {!hideMobileSubmit && (
+        <button
+          type="submit"
+          className="inline-flex h-11 touch-manipulation items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm shadow-blue-200 sm:hidden"
+        >
+          Apply filters
+        </button>
+      )}
     </Form>
   )
 }

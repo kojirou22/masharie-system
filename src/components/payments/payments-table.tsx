@@ -23,6 +23,55 @@ function SortIcon({ active, direction }: { active: boolean; direction: string })
   return <RegistrySortIcon active={active} direction={direction} />
 }
 
+function PaymentMobileCard({
+  isAdmin,
+  onOpen,
+  payment,
+}: {
+  isAdmin: boolean
+  onOpen: () => void
+  payment: PaymentWithProject
+}) {
+  const isClickable = isAdmin || Boolean(payment.project_id)
+
+  return (
+    <button
+      type="button"
+      disabled={!isClickable}
+      onClick={onOpen}
+      className="rounded-2xl border border-border bg-background/70 p-4 text-left shadow-sm transition-colors enabled:hover:border-primary/40 enabled:hover:bg-muted/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-default"
+      aria-label={isClickable ? (isAdmin ? 'Edit payment' : `Open project ${payment.project?.project_number ?? ''}`) : undefined}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-xs font-medium text-muted-foreground">
+            {formatDate(payment.released_date ?? payment.released_at ?? payment.created_at)}
+          </p>
+          <p className="mt-1 font-mono text-xs font-medium text-primary">
+            {payment.project?.project_number ?? 'No project'}
+          </p>
+        </div>
+        <span className="shrink-0 text-sm font-semibold text-foreground">{formatPHP(payment.amount)}</span>
+      </div>
+      <p className={`mt-2 truncate text-sm font-medium text-foreground ${arabicTextClass(payment.project?.name)}`}>
+        {payment.project?.name ?? 'Unlinked payment'}
+      </p>
+      <p className={`mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground ${arabicTextClass(payment.project?.address)}`}>
+        {payment.project?.address ?? 'No address'}
+      </p>
+      <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+        <span className="rounded-xl bg-muted/60 px-2.5 py-2">Check: {payment.check_number ?? '—'}</span>
+        <span className="rounded-xl bg-muted/60 px-2.5 py-2">Voucher: {payment.voucher_number ?? '—'}</span>
+      </div>
+      {payment.project?.supervisor && (
+        <p className={`mt-3 text-xs text-muted-foreground ${arabicTextClass(payment.project.supervisor)}`}>
+          Supervisor: {payment.project.supervisor}
+        </p>
+      )}
+    </button>
+  )
+}
+
 export function PaymentsTable({
   payments,
   total,
@@ -107,7 +156,15 @@ export function PaymentsTable({
     <div className="space-y-4">
       <RegistryTableShell
         hint={`Click a payment row to ${isAdmin ? 'edit it' : 'open its project'}.`}
-        mobileHint="Swipe horizontally to see project details and amounts."
+        mobileCards={payments.map((payment) => (
+          <PaymentMobileCard
+            key={payment.id}
+            isAdmin={isAdmin}
+            onOpen={() => openPayment(payment)}
+            payment={payment}
+          />
+        ))}
+        mobileHint={`Tap a payment card to ${isAdmin ? 'edit it' : 'open its project'}.`}
         minWidth="840px"
         tableClassName="table-fixed"
       >

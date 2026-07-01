@@ -1,128 +1,115 @@
-import Link from 'next/link';
-import {
-  ArrowRight,
-  BarChart3,
-  FileText,
-  HandCoins,
-  Landmark,
-} from 'lucide-react';
+import Link from 'next/link'
+import { ArrowRight, BarChart3, FileText, HandCoins, Landmark } from 'lucide-react'
 
-const cards = [
+const primaryEntries = [
   {
     href: '/projects',
     title: 'Projects',
-    description:
-      'Browse community development work by donor, type, status, and budget.',
+    description: 'Browse project records by batch, type, status, supervisor, and budget.',
     icon: Landmark,
+    meta: 'Public registry',
   },
   {
     href: '/payments',
     title: 'Payment Releases',
-    description:
-      'Track released checks, vouchers, project links, and payment status.',
+    description: 'Review released checks, vouchers, linked projects, dates, and amounts.',
     icon: HandCoins,
+    meta: 'Release tracking',
   },
   {
     href: '/expenses',
     title: 'Expenses',
-    description:
-      'Review operational expenses by account type, date, purpose, and status.',
+    description: 'Track operating expenses by date, purpose, requester, account, and status.',
     icon: FileText,
+    meta: 'Expense registry',
   },
-  {
-    href: '/dashboard',
-    title: 'Admin Dashboard',
-    description:
-      'Open protected KPI cards, charts, and admin project management links.',
-    icon: BarChart3,
-  },
-];
+]
+
+const secondaryEntries = [
+  { href: '/dashboard', label: 'Admin dashboard', description: 'KPIs, charts, and protected management links.', icon: BarChart3 },
+  { href: '/login', label: 'Admin login', description: 'Sign in to create or edit operational records.', icon: ArrowRight },
+]
 
 export default function Home() {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-      <section className="overflow-hidden rounded-[2rem] border border-blue-100 bg-white shadow-sm shadow-blue-100/70">
-        <div className="grid gap-8 p-6 sm:p-10 lg:grid-cols-[1.1fr_0.9fr] lg:p-12">
-          <div className="flex flex-col justify-center">
-            <p className="mb-4 inline-flex w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
-              Community project operations
-            </p>
-            <h1 className="max-w-3xl text-4xl font-black tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
-              A simple dashboard for Masharie projects, payments, and expenses.
+    <div className="mx-auto max-w-7xl px-4 py-5 sm:py-6">
+      <section className="rounded-3xl border border-border/80 bg-card/90 p-5 shadow-sm sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <p className="mb-2 text-sm font-medium text-muted-foreground">Masharie operations</p>
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+              Open the records you need.
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg">
-              Review public project data quickly, then sign in as an admin when
-              you need to manage records and charts.
+            <p className="mt-3 text-sm leading-6 text-muted-foreground sm:text-base">
+              Projects, payment releases, and expenses are organized for quick lookup. Admin actions stay behind sign-in.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/projects"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 active:scale-[0.99]"
-              >
-                View projects
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex items-center justify-center rounded-full border border-blue-200 bg-white px-5 py-3 text-sm font-semibold text-blue-700 hover:border-blue-300 hover:bg-blue-50 active:scale-[0.99]"
-              >
-                Admin login
-              </Link>
-            </div>
           </div>
-          <div className="rounded-[1.5rem] border border-slate-200 bg-slate-950 p-5 text-white shadow-2xl shadow-slate-300/50">
-            <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-blue-200">
-                  Live overview
-                </p>
-                <p className="mt-1 text-lg font-semibold">
-                  Operational clarity
-                </p>
-              </div>
-              <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-semibold text-emerald-200">
-                Public data
-              </span>
-            </div>
-            <div className="grid gap-3">
-              {[
-                ['Project tracking', 'Budgets, donors, status, supervisors'],
-                ['Payment releases', 'Checks, vouchers, dates, amounts'],
-                ['Expense visibility', 'Account types and release status'],
-              ].map(([title, description]) => (
-                <div
-                  key={title}
-                  className="rounded-2xl border border-white/10 bg-white/[0.06] p-4"
-                >
-                  <p className="font-semibold">{title}</p>
-                  <p className="mt-1 text-sm text-slate-300">{description}</p>
-                </div>
-              ))}
-            </div>
+          <div className="flex flex-col gap-2 sm:flex-row lg:justify-end">
+            <Link
+              href="/projects"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+            >
+              View projects
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
+            <Link
+              href="/login"
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+            >
+              Admin login
+            </Link>
           </div>
         </div>
       </section>
 
-      <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {cards.map((card) => {
-          const Icon = card.icon;
+      <section className="mt-4 grid gap-4 lg:grid-cols-3">
+        {primaryEntries.map((entry) => {
+          const Icon = entry.icon
           return (
             <Link
-              key={card.href}
-              href={card.href}
-              className="group rounded-3xl border border-blue-100 bg-white p-5 shadow-sm shadow-blue-100/60 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md hover:shadow-blue-100"
+              key={entry.href}
+              href={entry.href}
+              className="group rounded-3xl border border-border/80 bg-card p-5 shadow-sm transition-colors hover:border-primary/40 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             >
-              <span className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-700 group-hover:bg-blue-600 group-hover:text-white">
-                <Icon className="h-5 w-5" aria-hidden="true" />
+              <div className="flex items-start justify-between gap-4">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Icon className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <span className="rounded-full border border-border bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                  {entry.meta}
+                </span>
+              </div>
+              <h2 className="mt-5 text-lg font-semibold text-foreground">{entry.title}</h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{entry.description}</p>
+              <span className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary">
+                Open registry
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
               </span>
-              <h2 className="font-bold text-slate-950">{card.title}</h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                {card.description}
-              </p>
             </Link>
-          );
+          )
+        })}
+      </section>
+
+      <section className="mt-4 grid gap-3 sm:grid-cols-2">
+        {secondaryEntries.map((entry) => {
+          const Icon = entry.icon
+          return (
+            <Link
+              key={entry.href}
+              href={entry.href}
+              className="flex items-center gap-3 rounded-2xl border border-border/80 bg-card/70 p-4 text-sm shadow-sm transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+            >
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+                <Icon className="h-4 w-4" aria-hidden="true" />
+              </span>
+              <span className="min-w-0">
+                <span className="block font-semibold text-foreground">{entry.label}</span>
+                <span className="block text-muted-foreground">{entry.description}</span>
+              </span>
+            </Link>
+          )
         })}
       </section>
     </div>
-  );
+  )
 }

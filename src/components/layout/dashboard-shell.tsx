@@ -42,7 +42,13 @@ function getSidebarServerSnapshot() {
   return false
 }
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+export function DashboardShell({
+  children,
+  isAuthenticated,
+}: {
+  children: React.ReactNode
+  isAuthenticated: boolean
+}) {
   const pathname = usePathname()
   const isAuthRoute = AUTH_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`))
 
@@ -50,14 +56,20 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     return <main id="main-content" className="min-h-screen">{children}</main>
   }
 
-  return <DashboardFrame pathname={pathname}>{children}</DashboardFrame>
+  return (
+    <DashboardFrame isAuthenticated={isAuthenticated} pathname={pathname}>
+      {children}
+    </DashboardFrame>
+  )
 }
 
 function DashboardFrame({
   children,
+  isAuthenticated,
   pathname,
 }: {
   children: React.ReactNode
+  isAuthenticated: boolean
   pathname: string
 }) {
   const sidebarCollapsed = useSyncExternalStore(
@@ -85,7 +97,7 @@ function DashboardFrame({
           sidebarCollapsed && 'lg:pl-[5.25rem]'
         )}
       >
-        <TopBar pathname={pathname} />
+        <TopBar isAuthenticated={isAuthenticated} pathname={pathname} />
         <main id="main-content" className="flex-1 px-4 py-4 sm:px-6 lg:px-8">
           {children}
         </main>
@@ -155,12 +167,11 @@ function DesktopSidebar({
           type="button"
           variant="ghost"
           size={collapsed ? 'icon' : 'lg'}
-          className={cn('w-full justify-start', collapsed && 'justify-center')}
+          className="w-full justify-center"
           onClick={onToggle}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? <ChevronRight /> : <ChevronLeft />}
-          {!collapsed && <span>Collapse</span>}
         </Button>
       </div>
     </aside>
@@ -181,7 +192,7 @@ function NavSection({
   return (
     <div>
       {!collapsed && (
-        <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <p className="mb-2 px-3 text-xs font-medium text-muted-foreground">
           {title}
         </p>
       )}
@@ -232,35 +243,64 @@ function NavLink({
   )
 }
 
-function TopBar({ pathname }: { pathname: string }) {
+function TopBar({
+  isAuthenticated,
+  pathname,
+}: {
+  isAuthenticated: boolean
+  pathname: string
+}) {
   const title = useMemo(() => getRouteTitle(pathname), [pathname])
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/80 bg-background/85 backdrop-blur-xl">
-      <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 border-b border-border/80 bg-background/90 backdrop-blur-xl">
+      <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-3">
-          <MobileNav pathname={pathname} />
+          <MobileNav isAuthenticated={isAuthenticated} pathname={pathname} />
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-foreground">{title}</p>
-            <p className="hidden truncate text-xs text-muted-foreground sm:block">
-              Community project operations dashboard
-            </p>
+            <p className="truncate text-sm font-semibold leading-none text-foreground">{title}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <form action="/api/auth/signout" method="POST" className="hidden sm:block">
-            <Button type="submit" variant="outline" size="lg">
-              Sign out
-            </Button>
-          </form>
+          <AuthAction isAuthenticated={isAuthenticated} className="hidden sm:inline-flex" />
         </div>
       </div>
     </header>
   )
 }
 
-function MobileNav({ pathname }: { pathname: string }) {
+function AuthAction({
+  className,
+  isAuthenticated,
+}: {
+  className?: string
+  isAuthenticated: boolean
+}) {
+  if (!isAuthenticated) {
+    return (
+      <Button asChild variant="outline" size="lg" className={className}>
+        <Link href="/login?redirect=/dashboard">Sign in</Link>
+      </Button>
+    )
+  }
+
+  return (
+    <form action="/api/auth/signout" method="POST" className={className}>
+      <Button type="submit" variant="outline" size="lg" className="w-full">
+        Sign out
+      </Button>
+    </form>
+  )
+}
+
+function MobileNav({
+  isAuthenticated,
+  pathname,
+}: {
+  isAuthenticated: boolean
+  pathname: string
+}) {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -276,11 +316,7 @@ function MobileNav({ pathname }: { pathname: string }) {
         <div className="space-y-6 p-4">
           <MobileNavSection items={primaryNavItems} pathname={pathname} title="Operations" />
           <MobileNavSection items={quickActionItems} pathname={pathname} title="Create" />
-          <form action="/api/auth/signout" method="POST">
-            <Button type="submit" variant="outline" size="lg" className="w-full">
-              Sign out
-            </Button>
-          </form>
+          <AuthAction isAuthenticated={isAuthenticated} className="w-full" />
         </div>
       </SheetContent>
     </Sheet>
@@ -298,7 +334,7 @@ function MobileNavSection({
 }) {
   return (
     <div>
-      <p className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+      <p className="mb-2 px-2 text-xs font-medium text-muted-foreground">
         {title}
       </p>
       <nav className="grid gap-1" aria-label={`Mobile ${title}`}>

@@ -14,6 +14,7 @@ import { ProjectsTable } from '@/components/projects/projects-table';
 import { getAdminUser } from '@/lib/auth/admin';
 import { getProjects, type ProjectSortColumn, type SortDirection } from '@/lib/supabase/queries/projects';
 import type { ProjectStatus, ProjectType } from '@/lib/types/database';
+import { parsePage, parseSort, sanitizeSearch } from '@/lib/utils/registry';
 
 export const revalidate = 3600;
 
@@ -46,10 +47,6 @@ const SORT_COLUMNS = [
   'updated_at',
 ] as const satisfies readonly ProjectSortColumn[];
 
-function isProjectSortColumn(value: string): value is ProjectSortColumn {
-  return SORT_COLUMNS.includes(value as ProjectSortColumn);
-}
-
 function isSortDirection(value: string): value is SortDirection {
   return value === 'asc' || value === 'desc';
 }
@@ -75,10 +72,13 @@ function FilterBar({
   currentSort: string;
   currentDir: string;
 }) {
+  const hasAdvancedFilters = Boolean(currentStatus || currentType || currentBatchNumber || currentBatchYear !== getCurrentYear());
+
   return (
     <AutoFilterForm
       action="/projects"
       className={registryFilterGridClass}
+      hideMobileSubmit
     >
       {currentSort && currentDir && (
         <>
@@ -102,79 +102,106 @@ function FilterBar({
           className={registryInputClass}
         />
       </div>
-      <div>
-        <label
-          htmlFor="status"
-          className={registryLabelClass}
+      <input
+        id="project-filter-toggle"
+        type="checkbox"
+        className="peer sr-only sm:hidden"
+        data-no-auto-submit
+        defaultChecked={hasAdvancedFilters}
+      />
+      <label
+        htmlFor="project-filter-toggle"
+        className="flex h-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/80 peer-checked:hidden sm:hidden"
+      >
+        Expand filters
+      </label>
+      <label
+        htmlFor="project-filter-toggle"
+        className="hidden h-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/80 peer-checked:flex sm:hidden"
+      >
+        Hide filters
+      </label>
+      <div className="hidden gap-3 peer-checked:grid sm:contents">
+        <div>
+          <label
+            htmlFor="status"
+            className={registryLabelClass}
+          >
+            Status
+          </label>
+          <select
+            id="status"
+            name="status"
+            defaultValue={currentStatus}
+            className={`${registrySelectClass} lg:w-28`}
+          >
+            <option value="">All</option>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label
+            htmlFor="type"
+            className={registryLabelClass}
+          >
+            Type
+          </label>
+          <select
+            id="type"
+            name="type"
+            defaultValue={currentType}
+            className={`${registrySelectClass} lg:w-28`}
+          >
+            <option value="">All</option>
+            {TYPE_OPTIONS.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label
+            htmlFor="batch_number"
+            className={registryLabelClass}
+          >
+            Batch #
+          </label>
+          <input
+            id="batch_number"
+            name="batch_number"
+            type="text"
+            defaultValue={currentBatchNumber}
+            placeholder="1"
+            className={`${registryInputClass} lg:w-24`}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="batch_year"
+            className={registryLabelClass}
+          >
+            Year
+          </label>
+          <input
+            id="batch_year"
+            name="batch_year"
+            type="number"
+            defaultValue={currentBatchYear}
+            placeholder="2026"
+            className={`${registryInputClass} lg:w-28`}
+          />
+        </div>
+        <button
+          type="submit"
+          className="inline-flex h-11 touch-manipulation items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white shadow-sm shadow-blue-200 sm:hidden"
         >
-          Status
-        </label>
-        <select
-          id="status"
-          name="status"
-          defaultValue={currentStatus}
-          className={`${registrySelectClass} lg:w-28`}
-        >
-          <option value="">All</option>
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label
-          htmlFor="type"
-          className={registryLabelClass}
-        >
-          Type
-        </label>
-        <select
-          id="type"
-          name="type"
-          defaultValue={currentType}
-          className={`${registrySelectClass} lg:w-28`}
-        >
-          <option value="">All</option>
-          {TYPE_OPTIONS.map((t) => (
-            <option key={t} value={t}>
-              {t}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label
-          htmlFor="batch_number"
-          className={registryLabelClass}
-        >
-          Batch #
-        </label>
-        <input
-          id="batch_number"
-          name="batch_number"
-          type="text"
-          defaultValue={currentBatchNumber}
-          placeholder="1"
-          className={`${registryInputClass} lg:w-24`}
-        />
-      </div>
-      <div>
-        <label
-          htmlFor="batch_year"
-          className={registryLabelClass}
-        >
-          Year
-        </label>
-        <input
-          id="batch_year"
-          name="batch_year"
-          type="number"
-          defaultValue={currentBatchYear}
-          placeholder="2026"
-          className={`${registryInputClass} lg:w-28`}
-        />
+          Apply filters
+        </button>
       </div>
     </AutoFilterForm>
   );
@@ -186,20 +213,26 @@ export default async function ProjectsPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await searchParams;
-  const search = typeof params.search === 'string' ? params.search : '';
+  const search = sanitizeSearch(params.search);
   const status = typeof params.status === 'string' ? params.status : '';
   const type = typeof params.type === 'string' ? params.type : '';
   const batch_number =
     typeof params.batch_number === 'string' ? params.batch_number : '';
   const rawBatchYear = typeof params.batch_year === 'string' ? params.batch_year : undefined;
   const batch_year = rawBatchYear ?? getCurrentYear();
-  const page = typeof params.page === 'string' ? parseInt(params.page) || 1 : 1;
+  const page = parsePage(params.page);
   const rawSort = typeof params.sort === 'string' ? params.sort : '';
   const rawDir = typeof params.dir === 'string' ? params.dir : '';
-  const sort = isProjectSortColumn(rawSort) ? rawSort : 'updated_at';
-  const dir = isSortDirection(rawDir) ? rawDir : 'desc';
+  const parsedSort = parseSort({
+    sort: params.sort,
+    direction: params.dir,
+    allowedSorts: SORT_COLUMNS,
+    defaultSort: 'updated_at',
+  });
+  const sort = parsedSort.sort;
+  const dir: SortDirection = parsedSort.ascending ? 'asc' : 'desc';
   const hasExplicitSort = Boolean(
-    rawSort && rawDir && isProjectSortColumn(rawSort) && isSortDirection(rawDir)
+    rawSort && rawDir && SORT_COLUMNS.includes(rawSort as ProjectSortColumn) && isSortDirection(rawDir)
   );
 
   const [{ data: projects, count: total }, { isAdmin }] = await Promise.all([

@@ -1,10 +1,16 @@
-import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+
 import { Breadcrumbs } from '@/components/breadcrumbs'
+import { Badge } from '@/components/ui/badge'
+import { FormSection, FormShell, Field, SelectField } from '@/components/forms'
 import { requireAdmin } from '@/lib/auth/admin'
 import { setFlash } from '@/lib/flash'
 import { expenseSchema } from '@/lib/validations/expense'
-import type { PaymentStatus, AccountType } from '@/lib/types/database'
+import { formatPHP } from '@/lib/utils/currency'
+import type { AccountType, PaymentStatus } from '@/lib/types/database'
+
+const ACCOUNT_TYPE_OPTIONS: AccountType[] = ['Project Account', 'Expenses Account', 'Savings Account']
+const EXPENSE_STATUS_OPTIONS: PaymentStatus[] = ['Released', 'Cancelled']
 
 export default async function EditExpensePage({
   params,
@@ -63,79 +69,64 @@ export default async function EditExpensePage({
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 sm:py-10">
-      <Breadcrumbs items={[{ label: 'Expenses', href: '/expenses' }, { label: 'Edit Expense' }]} />
-      <Link href="/expenses" className="text-sm text-blue-700 hover:underline mb-4 inline-block">
-        ← Back to expenses
-      </Link>
-      <h1 className="text-2xl font-bold text-slate-950 mb-6 font-mono">
-        Edit Expense
-      </h1>
-      <form action={updateExpense} className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <FormShell
+      action={updateExpense}
+      backHref="/expenses"
+      backLabel="Back to expenses"
+      breadcrumbs={
+        <Breadcrumbs
+          items={[
+            { label: 'Expenses', href: '/expenses' },
+            { label: expense.check_number },
+            { label: 'Edit' },
+          ]}
+        />
+      }
+      description="Adjust one expense row while preserving the existing submit contract."
+      meta={
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline">{expense.status}</Badge>
+          <Badge variant="secondary">{formatPHP(Number(expense.amount))}</Badge>
+        </div>
+      }
+      submitLabel="Save Changes"
+      title="Edit Expense Release"
+    >
+      <FormSection
+        title="Expense purpose"
+        description="Update the individual purpose, requester, and amount for this expense row."
+      >
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_180px]">
+          <Field name="purpose" label="Purpose" defaultValue={expense.purpose} required />
+          <Field name="requested_by" label="Requested By" defaultValue={expense.requested_by} required />
+          <Field name="amount" label="Amount (PHP)" type="number" defaultValue={String(expense.amount)} required />
+        </div>
+      </FormSection>
+
+      <FormSection
+        title="Release details"
+        description="Date, check number, voucher number, account, and lifecycle status for this expense."
+      >
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Field name="date" label="Date" type="date" defaultValue={expense.date} required />
           <Field name="check_number" label="Check Number" defaultValue={expense.check_number} required />
           <Field name="voucher_number" label="Voucher Number" defaultValue={expense.voucher_number} required />
-          <Field name="amount" label="Amount (PHP)" type="number" defaultValue={String(expense.amount)} required />
-          <Field name="purpose" label="Purpose" defaultValue={expense.purpose} required />
-          <Field name="requested_by" label="Requested By" defaultValue={expense.requested_by} required />
-          <SelectField name="account_type" label="Account Type" options={['Project Account', 'Expenses Account', 'Savings Account']} defaultValue={expense.account_type} required />
-          <SelectField name="status" label="Status" options={['Released', 'Cancelled']} defaultValue={expense.status} required />
+          <SelectField
+            name="account_type"
+            label="Account Type"
+            options={ACCOUNT_TYPE_OPTIONS}
+            defaultValue={expense.account_type}
+            required
+          />
+          <SelectField
+            name="status"
+            label="Status"
+            options={EXPENSE_STATUS_OPTIONS}
+            defaultValue={expense.status}
+            required
+          />
         </div>
-        <button
-          type="submit"
-          className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm shadow-blue-200 hover:bg-blue-700 transition-colors"
-        >
-          Save Changes
-        </button>
-      </form>
-    </div>
-  )
-}
-
-function Field({ name, label, placeholder, defaultValue, type = 'text', required = false }: {
-  name: string; label: string; placeholder?: string; defaultValue?: string; type?: string; required?: boolean
-}) {
-  return (
-    <div>
-      <label htmlFor={name} className="block text-sm font-medium text-blue-700 mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        defaultValue={defaultValue}
-        required={required}
-        min={type === 'number' ? '0.01' : undefined}
-        step={type === 'number' ? '0.01' : undefined}
-        className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
-  )
-}
-
-function SelectField({ name, label, options, defaultValue, required = false }: {
-  name: string; label: string; options: string[]; defaultValue?: string; required?: boolean
-}) {
-  return (
-    <div>
-      <label htmlFor={name} className="block text-sm font-medium text-blue-700 mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <select
-        id={name}
-        name={name}
-        required={required}
-        defaultValue={defaultValue}
-        className="w-full rounded-xl border border-blue-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-      >
-        <option value="" disabled={required}>Select...</option>
-        {options.map((option) => (
-          <option key={option} value={option}>{option}</option>
-        ))}
-      </select>
-    </div>
+      </FormSection>
+    </FormShell>
   )
 }

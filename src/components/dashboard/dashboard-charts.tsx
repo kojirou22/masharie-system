@@ -12,7 +12,9 @@ import {
   Cell,
   ResponsiveContainer,
 } from 'recharts'
-import { BarChart3 } from 'lucide-react'
+import { BarChart3, CircleDollarSign, PieChart as PieChartIcon } from 'lucide-react'
+
+import { Surface, SurfaceHeader } from '@/components/ui/surface'
 import { formatPHP } from '@/lib/utils/currency'
 
 const COLORS = [
@@ -42,10 +44,13 @@ interface ChartData {
 
 export function DashboardCharts({ chartData }: { chartData: ChartData }) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60">
-        <h3 className="text-sm font-semibold text-slate-950 mb-4">Projects by Type</h3>
-        <div className="h-64">
+    <section className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <ChartSurface
+        title="Projects by type"
+        description="Distribution across operational categories."
+        icon={<PieChartIcon className="h-4 w-4" aria-hidden="true" />}
+      >
+        <div className="h-72">
           {chartData.projectsByType.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -58,7 +63,7 @@ export function DashboardCharts({ chartData }: { chartData: ChartData }) {
                   label={({ name, value }) => `${name} (${value})`}
                 >
                   {chartData.projectsByType.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`type-cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip contentStyle={tooltipStyle} />
@@ -68,11 +73,14 @@ export function DashboardCharts({ chartData }: { chartData: ChartData }) {
             <EmptyChart label="project type" />
           )}
         </div>
-      </div>
+      </ChartSurface>
 
-      <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60">
-        <h3 className="text-sm font-semibold text-slate-950 mb-4">Projects by Status</h3>
-        <div className="h-64">
+      <ChartSurface
+        title="Projects by status"
+        description="Current delivery state across all projects."
+        icon={<PieChartIcon className="h-4 w-4" aria-hidden="true" />}
+      >
+        <div className="h-72">
           {chartData.projectsByStatus.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -85,7 +93,7 @@ export function DashboardCharts({ chartData }: { chartData: ChartData }) {
                   label={({ name, value }) => `${name} (${value})`}
                 >
                   {chartData.projectsByStatus.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`status-cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip contentStyle={tooltipStyle} />
@@ -95,36 +103,64 @@ export function DashboardCharts({ chartData }: { chartData: ChartData }) {
             <EmptyChart label="project status" />
           )}
         </div>
-      </div>
+      </ChartSurface>
 
-      <div className="rounded-2xl border border-blue-100 bg-white p-6 shadow-sm shadow-blue-100/60 lg:col-span-2">
-        <h3 className="text-sm font-semibold text-slate-950 mb-4">Budget by Type</h3>
-        <div className="h-64">
+      <ChartSurface
+        className="lg:col-span-2"
+        title="Budget by type"
+        description="Approved budget grouped by project category."
+        icon={<CircleDollarSign className="h-4 w-4" aria-hidden="true" />}
+      >
+        <div className="h-80">
           {chartData.budgetByType.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData.budgetByType}>
+              <BarChart data={chartData.budgetByType} margin={{ top: 8, right: 12, left: 12, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickFormatter={(v) => formatPHP(v)} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} tickFormatter={(value) => formatPHP(value)} />
                 <Tooltip formatter={(value) => formatPHP(Number(value))} contentStyle={tooltipStyle} />
-                <Bar dataKey="value" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="value" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
             <EmptyChart label="budget" />
           )}
         </div>
-      </div>
-    </div>
+      </ChartSurface>
+    </section>
+  )
+}
+
+function ChartSurface({
+  children,
+  className,
+  description,
+  icon,
+  title,
+}: {
+  children: React.ReactNode
+  className?: string
+  description: string
+  icon: React.ReactNode
+  title: string
+}) {
+  return (
+    <Surface className={className}>
+      <SurfaceHeader
+        title={title}
+        description={description}
+        actions={<div className="rounded-full bg-primary/10 p-2 text-primary">{icon}</div>}
+      />
+      <div className="p-4">{children}</div>
+    </Surface>
   )
 }
 
 function EmptyChart({ label }: { label: string }) {
   return (
-    <div className="flex h-full min-h-64 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-500">
+    <div className="flex h-full min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/20 text-muted-foreground">
       <BarChart3 className="mb-2 h-8 w-8 opacity-40" aria-hidden="true" />
       <p className="text-sm font-medium">No {label} data yet</p>
     </div>
   )
 }
-

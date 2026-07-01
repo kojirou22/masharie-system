@@ -16,10 +16,11 @@ import {
   registryLabelClass,
   registrySelectClass,
 } from '@/components/registry';
-import { ExpenseRow } from '@/components/expenses/expense-row';
+import { ExpenseMobileCard, ExpenseRow } from '@/components/expenses/expense-row';
 import { getAdminUser } from '@/lib/auth/admin';
 import { getExpenses, type ExpenseSortColumn, type SortDirection } from '@/lib/supabase/queries/expenses';
 import { formatPHP } from '@/lib/utils/currency';
+import { parsePage, parseSort, sanitizeSearch } from '@/lib/utils/registry';
 import type { Expense, PaymentStatus, AccountType } from '@/lib/types/database';
 
 export const revalidate = 3600;
@@ -41,10 +42,6 @@ const SORT_COLUMNS = [
   'account_type',
   'created_at',
 ] as const satisfies readonly ExpenseSortColumn[];
-
-function isExpenseSortColumn(value: string): value is ExpenseSortColumn {
-  return SORT_COLUMNS.includes(value as ExpenseSortColumn);
-}
 
 function isSortDirection(value: string): value is SortDirection {
   return value === 'asc' || value === 'desc';
@@ -134,7 +131,10 @@ function ExpensesTable({
     <div className="space-y-4">
       <RegistryTableShell
         hint={isAdmin ? 'Click an expense row to edit it.' : 'Expense rows are read-only.'}
-        mobileHint="Swipe horizontally to see requester, status, amount, and account."
+        mobileCards={expenses.map((expense) => (
+          <ExpenseMobileCard key={expense.id} expense={expense} isAdmin={isAdmin} />
+        ))}
+        mobileHint={isAdmin ? 'Tap an expense card to edit it.' : 'Expense cards are read-only.'}
         minWidth="940px"
       >
         <thead className="bg-muted text-left text-xs uppercase tracking-wide text-muted-foreground">
@@ -301,7 +301,7 @@ export default async function ExpensesPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await searchParams;
-  const search = typeof params.search === 'string' ? params.search : '';
+  const search = sanitizeSearch(params.search);
   const status = typeof params.status === 'string' ? params.status : '';
   const account_type =
     typeof params.account_type === 'string' ? params.account_type : '';
@@ -312,13 +312,19 @@ export default async function ExpensesPage({
   const defaultDateRange = getDefaultDateRange();
   const dateFrom = legacyDate || (hasDateRangeParams ? rawDateFrom ?? '' : defaultDateRange.from);
   const dateTo = legacyDate || (hasDateRangeParams ? rawDateTo ?? '' : defaultDateRange.to);
-  const page = typeof params.page === 'string' ? parseInt(params.page) || 1 : 1;
+  const page = parsePage(params.page);
   const rawSort = typeof params.sort === 'string' ? params.sort : '';
   const rawDir = typeof params.dir === 'string' ? params.dir : '';
-  const sort = isExpenseSortColumn(rawSort) ? rawSort : 'date';
-  const dir = isSortDirection(rawDir) ? rawDir : 'desc';
+  const parsedSort = parseSort({
+    sort: params.sort,
+    direction: params.dir,
+    allowedSorts: SORT_COLUMNS,
+    defaultSort: 'date',
+  });
+  const sort = parsedSort.sort;
+  const dir: SortDirection = parsedSort.ascending ? 'asc' : 'desc';
   const hasExplicitSort = Boolean(
-    rawSort && rawDir && isExpenseSortColumn(rawSort) && isSortDirection(rawDir)
+    rawSort && rawDir && SORT_COLUMNS.includes(rawSort as ExpenseSortColumn) && isSortDirection(rawDir)
   );
 
   const [{ data: expenses, count: total, totalAmount }, { isAdmin }] = await Promise.all([

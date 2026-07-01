@@ -24,6 +24,7 @@ export function RegistryTableShell({
   children,
   className,
   hint,
+  mobileCards,
   mobileHint,
   minWidth = '900px',
   tableClassName,
@@ -31,10 +32,13 @@ export function RegistryTableShell({
   children: ReactNode
   className?: string
   hint?: ReactNode
+  mobileCards?: ReactNode
   mobileHint?: ReactNode
   minWidth?: string
   tableClassName?: string
 }) {
+  const hasMobileCards = Array.isArray(mobileCards) ? mobileCards.length > 0 : Boolean(mobileCards)
+
   return (
     <Surface className={cn('overflow-hidden', className)}>
       {(hint || mobileHint) && (
@@ -43,7 +47,8 @@ export function RegistryTableShell({
           {hint && <span className={mobileHint ? 'hidden sm:inline' : undefined}>{hint}</span>}
         </div>
       )}
-      <div className="max-h-[calc(100vh-10rem)] overflow-auto">
+      {hasMobileCards && <div className="grid gap-3 p-3 sm:hidden">{mobileCards}</div>}
+      <div className={cn('max-h-[calc(100vh-10rem)] overflow-auto', hasMobileCards && 'hidden sm:block')}>
         <table className={cn('w-full text-sm', tableClassName)} style={{ minWidth }}>
           {children}
         </table>

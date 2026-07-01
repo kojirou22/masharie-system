@@ -17,6 +17,7 @@ import {
 import { getAdminUser } from '@/lib/auth/admin';
 import { getPayments, type PaymentSortColumn, type SortDirection } from '@/lib/supabase/queries/payments';
 import { formatPHP } from '@/lib/utils/currency';
+import { parsePage, parseSort, sanitizeSearch } from '@/lib/utils/registry';
 import type { PaymentStatus } from '@/lib/types/database';
 
 export const revalidate = 3600;
@@ -31,10 +32,6 @@ const SORT_COLUMNS = [
   'status',
   'created_at',
 ] as const satisfies readonly PaymentSortColumn[];
-
-function isPaymentSortColumn(value: string): value is PaymentSortColumn {
-  return SORT_COLUMNS.includes(value as PaymentSortColumn);
-}
 
 function isSortDirection(value: string): value is SortDirection {
   return value === 'asc' || value === 'desc';
@@ -130,7 +127,7 @@ export default async function PaymentsPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await searchParams;
-  const search = typeof params.search === 'string' ? params.search : '';
+  const search = sanitizeSearch(params.search);
   const status = typeof params.status === 'string' ? params.status : '';
   const legacyDate = typeof params.date === 'string' ? params.date : '';
   const rawDateFrom = typeof params.date_from === 'string' ? params.date_from : undefined;
@@ -139,13 +136,19 @@ export default async function PaymentsPage({
   const defaultDateRange = getDefaultDateRange();
   const dateFrom = legacyDate || (hasDateRangeParams ? rawDateFrom ?? '' : defaultDateRange.from);
   const dateTo = legacyDate || (hasDateRangeParams ? rawDateTo ?? '' : defaultDateRange.to);
-  const page = typeof params.page === 'string' ? parseInt(params.page) || 1 : 1;
+  const page = parsePage(params.page);
   const rawSort = typeof params.sort === 'string' ? params.sort : '';
   const rawDir = typeof params.dir === 'string' ? params.dir : '';
-  const sort = isPaymentSortColumn(rawSort) ? rawSort : 'released_date';
-  const dir = isSortDirection(rawDir) ? rawDir : 'desc';
+  const parsedSort = parseSort({
+    sort: params.sort,
+    direction: params.dir,
+    allowedSorts: SORT_COLUMNS,
+    defaultSort: 'released_date',
+  });
+  const sort = parsedSort.sort;
+  const dir: SortDirection = parsedSort.ascending ? 'asc' : 'desc';
   const hasExplicitSort = Boolean(
-    rawSort && rawDir && isPaymentSortColumn(rawSort) && isSortDirection(rawDir)
+    rawSort && rawDir && SORT_COLUMNS.includes(rawSort as PaymentSortColumn) && isSortDirection(rawDir)
   );
 
   const [{ data: payments, count: total, totalAmount }, { isAdmin }] = await Promise.all([

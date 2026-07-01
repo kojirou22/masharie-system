@@ -120,7 +120,14 @@ export function ProjectsTable({
     <div className="space-y-4">
       <RegistryTableShell
         hint="Click a row to view project details."
-        mobileHint="Swipe horizontally to see budget and release totals."
+        mobileCards={projects.map((project) => (
+          <ProjectMobileCard
+            key={project.id}
+            project={project}
+            onOpen={() => openProject(project)}
+          />
+        ))}
+        mobileHint="Tap a project card to view details."
         minWidth="920px"
       >
             <thead className="bg-muted text-left text-xs uppercase tracking-wide text-muted-foreground">
@@ -209,6 +216,48 @@ export function ProjectsTable({
   )
 }
 
+function ProjectMobileCard({
+  onOpen,
+  project,
+}: {
+  project: ProjectWithTotals
+  onOpen: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group rounded-2xl border border-border bg-background/70 p-4 text-left shadow-sm transition-colors hover:border-primary/40 hover:bg-muted/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+      aria-label={`Open project ${project.project_number} details`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-mono text-xs font-medium text-primary">{project.project_number}</p>
+          <p className={`mt-1 truncate text-base font-medium leading-6 text-foreground ${arabicTextClass(project.supervisor)}`}>
+            {project.supervisor}
+          </p>
+        </div>
+        <StatusBadge status={project.status} />
+      </div>
+      <p className={`mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground ${arabicTextClass(project.address)}`}>
+        {project.address || 'No address'}
+      </p>
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground">
+        <span className="rounded-full border border-border bg-muted px-2.5 py-1">{project.type}</span>
+        <span>Batch {project.batch_number}</span>
+        <span>{formatPHP(project.budget)}</span>
+      </div>
+      <div className="mt-3 flex items-center justify-between border-t border-border/70 pt-3 text-sm">
+        <span className="text-muted-foreground">Released</span>
+        <span className={cn('inline-flex items-center gap-1 font-semibold', project.total_released > 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-muted-foreground')}>
+          {formatPHP(project.total_released)}
+          <ChevronRight className="h-4 w-4 opacity-60" aria-hidden="true" />
+        </span>
+      </div>
+    </button>
+  )
+}
+
 function ProjectDetailsDrawer({
   project,
   onClose,
@@ -234,7 +283,7 @@ function ProjectDetailsDrawer({
       <aside className="project-drawer-panel absolute right-0 top-0 flex h-full w-full flex-col border-l border-border bg-card text-card-foreground shadow-2xl shadow-slate-950/20 sm:w-1/2 sm:rounded-l-3xl">
         <div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
           <div>
-            <p className="mb-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Project Number</p>
+            <p className="mb-1 text-xs font-medium text-muted-foreground">Project number</p>
             <h2 id="project-drawer-title" className="font-mono text-2xl font-black tracking-tight text-foreground">
               {project.project_number}
             </h2>
@@ -258,7 +307,7 @@ function ProjectDetailsDrawer({
           </div>
 
           <section className="rounded-3xl border border-border bg-background/60 p-4 shadow-sm">
-            <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-foreground">Project Details</h3>
+            <h3 className="mb-3 text-sm font-semibold text-foreground">Project details</h3>
             <div className="grid gap-3 text-sm sm:grid-cols-2">
               <InfoField label="Name" value={project.name} />
               <InfoField label="Donor" value={project.donor} />
@@ -272,7 +321,7 @@ function ProjectDetailsDrawer({
           </section>
 
           <section className="rounded-3xl border border-border bg-background/60 p-4 shadow-sm">
-            <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-foreground">Funding Progress</h3>
+            <h3 className="mb-3 text-sm font-semibold text-foreground">Funding progress</h3>
             <div className="mb-2 flex items-end justify-between gap-4">
               <div>
                 <p className="text-2xl font-black text-foreground">{formatPHP(released)}</p>
@@ -292,7 +341,7 @@ function ProjectDetailsDrawer({
           </section>
 
           <section className="rounded-3xl border border-border bg-background/60 p-4 shadow-sm">
-            <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-foreground">Payment Releases</h3>
+            <h3 className="mb-3 text-sm font-semibold text-foreground">Payment releases</h3>
             {paymentReleases.length > 0 ? (
               <div className="overflow-hidden rounded-2xl border border-border">
                 <div className="max-h-72 overflow-auto">
@@ -328,12 +377,13 @@ function ProjectDetailsDrawer({
           </section>
         </div>
 
-        <div className="border-t border-border px-5 py-4">
+        <div className="flex items-center justify-between gap-3 border-t border-border px-5 py-3">
+          <span className="text-xs text-muted-foreground">Need the full record?</span>
           <Link
             href={`/projects/${project.id}`}
-            className="inline-flex w-full items-center justify-center rounded-2xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-sm transition-colors hover:bg-primary/80 focus-visible:ring-2 focus-visible:ring-ring/50"
+            className="inline-flex items-center justify-center rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50"
           >
-            Open full project page
+            Open full page
           </Link>
         </div>
       </aside>
@@ -344,7 +394,7 @@ function ProjectDetailsDrawer({
 function InfoField({ label, value, wide = false }: { label: string; value: string; wide?: boolean }) {
   return (
     <div className={`rounded-2xl border border-border bg-muted/35 p-3 ${wide ? 'sm:col-span-2' : ''}`}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className={`mt-1 break-words text-sm font-semibold leading-6 text-foreground ${arabicTextClass(value)}`}>{value || '—'}</p>
     </div>
   )
