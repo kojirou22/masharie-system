@@ -1,6 +1,7 @@
 'use client'
 
 import { CheckCircle2, X, XCircle } from 'lucide-react'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { cn } from '@/lib/utils'
@@ -35,6 +36,8 @@ function readFlashCookie(): Flash | null {
 
 export function FlashMessage() {
   const [flash, setFlash] = useState<Flash | null>(null)
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     let dismissTimeout: number | undefined
@@ -51,7 +54,7 @@ export function FlashMessage() {
       window.clearTimeout(readTimeout)
       if (dismissTimeout) window.clearTimeout(dismissTimeout)
     }
-  }, [])
+  }, [pathname, searchParams])
 
   if (!flash) return null
 
