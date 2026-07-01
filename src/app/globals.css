@@ -186,13 +186,13 @@ select {
 
 @media (min-width: 640px) {
   .registry-compact-filter-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr) 116px;
   }
 }
 
 @media (min-width: 1024px) {
   .registry-compact-filter-grid {
-    grid-template-columns: minmax(360px, 1fr) repeat(4, auto);
+    grid-template-columns: minmax(360px, 1fr) 116px;
     align-items: end;
   }
 }

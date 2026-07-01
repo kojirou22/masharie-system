@@ -64,6 +64,10 @@ function FilterBar({
   currentSort: string;
   currentDir: string;
 }) {
+  const defaultDateRange = getDefaultDateRange();
+  const hasDateRangeFilter =
+    currentDateFrom !== defaultDateRange.from || currentDateTo !== defaultDateRange.to;
+
   return (
     <AutoFilterForm
       action="/payments"
@@ -76,7 +80,7 @@ function FilterBar({
           <input type="hidden" name="dir" value={currentDir} />
         </>
       )}
-      <div className="sm:col-span-2 lg:col-span-1">
+      <div className="min-w-0">
         <label
           htmlFor="search"
           className={`${registryLabelClass} sr-only sm:not-sr-only`}
@@ -95,23 +99,23 @@ function FilterBar({
       <input
         id="payment-filter-toggle"
         type="checkbox"
-        className="peer sr-only sm:hidden"
+        className="peer sr-only"
         data-no-auto-submit
-        defaultChecked={Boolean(currentStatus)}
+        defaultChecked={Boolean(currentStatus || hasDateRangeFilter)}
       />
       <label
         htmlFor="payment-filter-toggle"
-        className="flex h-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/80 peer-checked:hidden sm:hidden"
+        className="flex h-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/80 peer-checked:hidden"
       >
         Filters
       </label>
       <label
         htmlFor="payment-filter-toggle"
-        className="hidden h-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/80 peer-checked:flex sm:hidden"
+        className="hidden h-9 cursor-pointer items-center justify-center rounded-lg border border-border bg-muted px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted/80 peer-checked:flex"
       >
         Hide
       </label>
-      <div className="col-span-2 hidden gap-3 peer-checked:grid sm:contents">
+      <div className="col-span-2 hidden gap-3 peer-checked:grid sm:grid-cols-2 lg:grid-cols-[auto_auto] lg:items-end">
         <DateRangeFilter
           key={`${currentDateFrom}:${currentDateTo}`}
           from={currentDateFrom}
